@@ -1,0 +1,8 @@
+﻿module AspNetDemo
+{
+	Entity DemoEntity
+	{
+		Logging;
+		ShortString Name;
+	}
+}

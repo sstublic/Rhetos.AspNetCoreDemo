@@ -1,0 +1,12 @@
+{
+    "ConnectionStrings": {
+      "ServerConnectionString": {
+        "ConnectionString": "Data Source=ILLIDAN\\OMEGAPROJECTSSQL;Initial Catalog=RhetosAspNetCoreDemo;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
+      }
+    },
+    "Rhetos": {
+      "AppSecurity": {
+        "AllClaimsForUsers": "ILLIDAN\\Sasa@ILLIDAN,ILLIDAN\\demo1@ILLIDAN"
+      }
+    }
+}

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>3b0d8c13-1220-489c-a536-66e6a7f11208</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="rhetos-app.docker.settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="rhetos-app.docker.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.0" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.0" NoWarn="NU1605" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Extensions.AspNetCore\Rhetos.Extensions.AspNetCore.csproj" />
+    <ProjectReference Include="..\RhetosApp\RhetosApp.csproj" />
+  </ItemGroup>
+</Project>
