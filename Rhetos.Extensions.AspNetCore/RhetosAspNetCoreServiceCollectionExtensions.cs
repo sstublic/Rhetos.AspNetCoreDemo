@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Rhetos;
 using Rhetos.Extensions.AspNetCore;
+using Rhetos.Processing;
 using Rhetos.Utilities;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -47,10 +48,23 @@ namespace Microsoft.Extensions.DependencyInjection
             */
 
             var rhetosContainer = host.RhetosRuntime.BuildContainer(logProvider, rhetosConfiguration, _ => { });
-            serviceCollection.AddSingleton(new RhetosContainerRoot(rhetosContainer));
-            serviceCollection.AddScoped<IRhetosScopeProvider, RhetosScopeProvider>();
-
+            serviceCollection.AddSingleton(new RhetosRootServiceProvider(rhetosContainer));
+            serviceCollection.AddScoped<IRhetosScopeServiceProvider, RhetosScopeServiceProvider>();
+            serviceCollection.AddRhetosComponentAsLazy<IProcessingEngine>();
+            
             return serviceCollection;
+        }
+
+        public static IServiceCollection AddRhetosComponentAsLazy<T>(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddScoped(ResolveLazyRhetosComponent<T>);
+            return serviceCollection;
+        }
+
+        private static Lazy<T> ResolveLazyRhetosComponent<T>(IServiceProvider serviceProvider)
+        {
+            var rhetosRequestScope = serviceProvider.GetRequiredService<IRhetosScopeServiceProvider>();
+            return new Lazy<T>(() => rhetosRequestScope.RequestLifetimeScope.Resolve<T>());
         }
     }
 }

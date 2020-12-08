@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Rhetos.Extensions.AspNetCore;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
+using Rhetos.Utilities;
 
 namespace WebApp.Controllers
 {
@@ -18,20 +19,26 @@ namespace WebApp.Controllers
     [Route("[controller]/[action]")]
     public class RhetosApiController : ControllerBase
     {
-        private readonly IRhetosScopeProvider rhetosScopeProvider;
-        private readonly RhetosContainerRoot root;
+        private readonly Lazy<IProcessingEngine> processingEngine;
+        private readonly Lazy<IUserInfo> rhetosUserInfo;
 
-        public RhetosApiController(IRhetosScopeProvider rhetosScopeProvider, RhetosContainerRoot root)
+        public RhetosApiController(Lazy<IProcessingEngine> processingEngine, Lazy<IUserInfo> rhetosUserInfo)
         {
-            this.rhetosScopeProvider = rhetosScopeProvider;
-            this.root = root;
+            this.processingEngine = processingEngine;
+            this.rhetosUserInfo = rhetosUserInfo;
         }
 
         [HttpGet]
         [AllowAnonymous]
         public string RequestInfo()
         {
-            return $"RootId: '{root.Id}'\nRequestScopeId: '{(rhetosScopeProvider as RhetosScopeProvider).Id}'\nUserName: '{User?.Identity?.Name}'";
+            return $"UserName: '{User?.Identity?.Name}'";
+        }
+
+        [HttpGet]
+        public string RhetosUserInfo()
+        {
+            return $"RhetosUserName: '{rhetosUserInfo.Value.UserName}'";
         }
 
         [HttpGet]
@@ -42,7 +49,7 @@ namespace WebApp.Controllers
                 DataSource = "AspNetDemo.DemoEntity",
                 ReadRecords = true,
             };
-            var result = rhetosScopeProvider.RequestProcessingEngine.Execute(new List<ICommandInfo>() { readCommand });
+            var result = processingEngine.Value.Execute(new List<ICommandInfo>() { readCommand });
 
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
@@ -58,7 +65,7 @@ namespace WebApp.Controllers
                 Entity = "AspNetDemo.DemoEntity",
                 DataToInsert = new[] {new AspNetDemo_DemoEntity() {Name = name}}
             };
-            var result = rhetosScopeProvider.RequestProcessingEngine.Execute(new List<ICommandInfo>() {insertCommand});
+            var result = processingEngine.Value.Execute(new List<ICommandInfo>() {insertCommand});
 
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
@@ -74,7 +81,7 @@ namespace WebApp.Controllers
                 OrderByProperties = new []{ new OrderByProperty() { Property = "Created", Descending = true} },
                 Top = 100
             };
-            var result = rhetosScopeProvider.RequestProcessingEngine.Execute(new List<ICommandInfo>() {readCommand});
+            var result = processingEngine.Value.Execute(new List<ICommandInfo>() {readCommand});
 
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }

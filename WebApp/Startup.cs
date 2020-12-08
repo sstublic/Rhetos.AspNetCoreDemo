@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
@@ -8,6 +7,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
 
 namespace WebApp
 {
@@ -32,6 +32,7 @@ namespace WebApp
             // Adding Rhetos to AspNetCore application
             var appRootPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             services.AddRhetos(appRootPath, Configuration.GetSection("RhetosApp"));
+            services.AddRhetosComponentAsLazy<Rhetos.Utilities.IUserInfo>(); // register additional desired Rhetos components
             // Done adding Rhetos
 
             services.AddAuthentication(o => o.AddScheme(DummyAuthenticationHandler.Scheme, b =>

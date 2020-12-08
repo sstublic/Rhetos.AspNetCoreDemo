@@ -7,9 +7,8 @@ using Rhetos.Processing;
 
 namespace Rhetos.Extensions.AspNetCore
 {
-    public interface IRhetosScopeProvider : IDisposable
+    internal interface IRhetosScopeServiceProvider : IDisposable
     {
         ILifetimeScope RequestLifetimeScope { get; }
-        IProcessingEngine RequestProcessingEngine { get; }
     }
 }

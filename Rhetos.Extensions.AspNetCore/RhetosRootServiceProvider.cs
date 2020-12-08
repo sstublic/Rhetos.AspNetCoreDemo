@@ -6,12 +6,11 @@ using Autofac;
 
 namespace Rhetos.Extensions.AspNetCore
 {
-    public class RhetosContainerRoot
+    internal class RhetosRootServiceProvider
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
         public IContainer Container { get; }
 
-        public RhetosContainerRoot(IContainer container)
+        public RhetosRootServiceProvider(IContainer container)
         {
             Container = container;
         }

@@ -6,17 +6,15 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Extensions.AspNetCore
 {
-    public class RhetosScopeProvider : IRhetosScopeProvider
+    internal class RhetosScopeServiceProvider : IRhetosScopeServiceProvider
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
         public ILifetimeScope RequestLifetimeScope => lifetimeScope.Value;
-        public IProcessingEngine RequestProcessingEngine => lifetimeScope.Value.Resolve<IProcessingEngine>();
 
-        private readonly RhetosContainerRoot containerRoot;
+        private readonly RhetosRootServiceProvider containerRoot;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly Lazy<ILifetimeScope> lifetimeScope;
 
-        public RhetosScopeProvider(RhetosContainerRoot containerRoot, IHttpContextAccessor httpContextAccessor)
+        public RhetosScopeServiceProvider(RhetosRootServiceProvider containerRoot, IHttpContextAccessor httpContextAccessor)
         {
             this.containerRoot = containerRoot;
             this.httpContextAccessor = httpContextAccessor;
