@@ -6,52 +6,26 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Extensions.AspNetCore
 {
-    internal class RhetosScopeServiceProvider : IRhetosScopeServiceProvider
+    internal class RhetosScopeServiceProvider : TransactionScopeContainer, IDisposable
     {
-        public ILifetimeScope RequestLifetimeScope => lifetimeScope.Value;
-
-        private readonly RhetosRootServiceProvider containerRoot;
-        private readonly IHttpContextAccessor httpContextAccessor;
-        private readonly Lazy<ILifetimeScope> lifetimeScope;
-
         public RhetosScopeServiceProvider(RhetosRootServiceProvider containerRoot, IHttpContextAccessor httpContextAccessor)
+        : base(containerRoot.Container, builder => RegisterUserInstance(builder, httpContextAccessor))
+        { }
+
+        private static void RegisterUserInstance(ContainerBuilder builder, IHttpContextAccessor httpContextAccessor)
         {
-            this.containerRoot = containerRoot;
-            this.httpContextAccessor = httpContextAccessor;
-            lifetimeScope = new Lazy<ILifetimeScope>(CreateLifetimeScope);
+            var userName = httpContextAccessor.HttpContext.User.Identity?.Name;
+            if (!string.IsNullOrEmpty(userName))
+                builder.RegisterInstance(new RhetosAspNetCoreUser(userName)).As<IUserInfo>();
         }
 
-        private ILifetimeScope CreateLifetimeScope()
+        public new void Dispose()
         {
-            var scope = containerRoot.Container.BeginLifetimeScope(builder =>
-            {
-                var userName = httpContextAccessor.HttpContext.User.Identity?.Name;
-                if (!string.IsNullOrEmpty(userName))
-                    builder.RegisterInstance(new RhetosAspNetCoreUser(userName)).As<IUserInfo>();
-            });
+            CommitChanges();
 
-            return scope;
-        }
-
-        private bool disposed = false;
-        public void Dispose()
-        {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-                return;
-
-            if (disposing)
-            {
-                if (lifetimeScope.IsValueCreated)
-                    lifetimeScope.Value.Dispose();
-            }
-
-            disposed = true;
+            base.Dispose();
         }
     }
 }

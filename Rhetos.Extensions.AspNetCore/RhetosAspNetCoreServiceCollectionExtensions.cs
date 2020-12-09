@@ -49,22 +49,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var rhetosContainer = host.RhetosRuntime.BuildContainer(logProvider, rhetosConfiguration, _ => { });
             serviceCollection.AddSingleton(new RhetosRootServiceProvider(rhetosContainer));
-            serviceCollection.AddScoped<IRhetosScopeServiceProvider, RhetosScopeServiceProvider>();
-            serviceCollection.AddRhetosComponentAsLazy<IProcessingEngine>();
+            serviceCollection.AddScoped<RhetosScopeServiceProvider>();
+            serviceCollection.AddRhetosComponent<Lazy<IProcessingEngine>>();
             
             return serviceCollection;
         }
 
-        public static IServiceCollection AddRhetosComponentAsLazy<T>(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddRhetosComponent<T>(this IServiceCollection serviceCollection) where T : class
         {
-            serviceCollection.AddScoped(ResolveLazyRhetosComponent<T>);
+            serviceCollection.AddScoped(services => services
+                .GetRequiredService<RhetosScopeServiceProvider>()
+                .Resolve<T>());
             return serviceCollection;
-        }
-
-        private static Lazy<T> ResolveLazyRhetosComponent<T>(IServiceProvider serviceProvider)
-        {
-            var rhetosRequestScope = serviceProvider.GetRequiredService<IRhetosScopeServiceProvider>();
-            return new Lazy<T>(() => rhetosRequestScope.RequestLifetimeScope.Resolve<T>());
         }
     }
 }

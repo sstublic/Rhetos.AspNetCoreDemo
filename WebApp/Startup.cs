@@ -32,7 +32,7 @@ namespace WebApp
             // Adding Rhetos to AspNetCore application
             var appRootPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             services.AddRhetos(appRootPath, Configuration.GetSection("RhetosApp"));
-            services.AddRhetosComponentAsLazy<Rhetos.Utilities.IUserInfo>(); // register additional desired Rhetos components
+            services.AddRhetosComponent<Lazy<Rhetos.Utilities.IUserInfo>>(); // register additional desired Rhetos components
             // Done adding Rhetos
 
             services.AddAuthentication(o => o.AddScheme(DummyAuthenticationHandler.Scheme, b =>
