@@ -1,14 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Autofac;
 using Common.Queryable;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Rhetos.Extensions.AspNetCore;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
@@ -19,26 +14,20 @@ namespace WebApp.Controllers
     [Route("[controller]/[action]")]
     public class RhetosApiController : ControllerBase
     {
-        private readonly Lazy<IProcessingEngine> processingEngine;
-        private readonly Lazy<IUserInfo> rhetosUserInfo;
+        private readonly IProcessingEngine processingEngine;
+        private readonly IUserInfo rhetosUserInfo;
 
-        public RhetosApiController(Lazy<IProcessingEngine> processingEngine, Lazy<IUserInfo> rhetosUserInfo)
+        public RhetosApiController(IProcessingEngine processingEngine, IUserInfo rhetosUserInfo)
         {
             this.processingEngine = processingEngine;
             this.rhetosUserInfo = rhetosUserInfo;
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public string RequestInfo()
-        {
-            return $"UserName: '{User?.Identity?.Name}'";
-        }
 
         [HttpGet]
         public string RhetosUserInfo()
         {
-            return $"RhetosUserName: '{rhetosUserInfo.Value.UserName}'";
+            return $"RhetosUserName: '{rhetosUserInfo.UserName}'";
         }
 
         [HttpGet]
@@ -49,7 +38,7 @@ namespace WebApp.Controllers
                 DataSource = "AspNetDemo.DemoEntity",
                 ReadRecords = true,
             };
-            var result = processingEngine.Value.Execute(new List<ICommandInfo>() { readCommand });
+            var result = processingEngine.Execute(new List<ICommandInfo>() { readCommand });
 
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
@@ -65,13 +54,12 @@ namespace WebApp.Controllers
                 Entity = "AspNetDemo.DemoEntity",
                 DataToInsert = new[] {new AspNetDemo_DemoEntity() {Name = name}}
             };
-            var result = processingEngine.Value.Execute(new List<ICommandInfo>() {insertCommand});
+            var result = processingEngine.Execute(new List<ICommandInfo>() {insertCommand});
 
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public string CommonLog()
         {
             var readCommand = new ReadCommandInfo()
@@ -81,27 +69,9 @@ namespace WebApp.Controllers
                 OrderByProperties = new []{ new OrderByProperty() { Property = "Created", Descending = true} },
                 Top = 100
             };
-            var result = processingEngine.Value.Execute(new List<ICommandInfo>() {readCommand});
+            var result = processingEngine.Execute(new List<ICommandInfo>() {readCommand});
 
             return JsonConvert.SerializeObject(result, Formatting.Indented);
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
-        public void SetUserCookie(string userName)
-        {
-            if (string.IsNullOrEmpty(userName))
-                Response.Cookies.Delete(DummyAuthenticationHandler.CookieName);
-            else
-                Response.Cookies.Append(DummyAuthenticationHandler.CookieName, userName);
-        }
-
-        [HttpGet]
-        [AllowAnonymous]
-        public string GetUserCookie()
-        {
-            var userName = Request.Cookies[DummyAuthenticationHandler.CookieName];
-            return $"UserName cookie value: '{userName}'";
         }
     }
 }

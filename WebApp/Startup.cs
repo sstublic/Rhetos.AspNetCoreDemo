@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Configuration;
+using Rhetos.Processing;
+using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace WebApp
 {
@@ -30,15 +30,22 @@ namespace WebApp
             });
 
             // Adding Rhetos to AspNetCore application
-            var appRootPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            services.AddRhetos(appRootPath, Configuration.GetSection("RhetosApp"));
-            services.AddRhetosComponent<Lazy<Rhetos.Utilities.IUserInfo>>(); // register additional desired Rhetos components
+            services.AddRhetos(
+                Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), // Specify location of the compiled Rhetos app.
+                Configuration.GetSection("RhetosApp"), // Map Microsoft.Extensions.Configuration section to Rhetos configuration.
+                builder => // Specify which Rhetos components will be available for injection in controllers.
+                {
+                    builder
+                        .AddAspNetCoreUser() // Add default IUserInfo implementation which extracts username from HttpContext.
+                        .AddRhetosComponent<IProcessingEngine>(); // Add IProcessingEngine so we can use it in our controllers to execute Rhetos commands.
+                });
             // Done adding Rhetos
 
             services.AddAuthentication(o => o.AddScheme(DummyAuthenticationHandler.Scheme, b =>
             {
                 b.HandlerType = typeof(DummyAuthenticationHandler);
             }));
+
             services.AddAuthorization(a =>
             {
                 a.FallbackPolicy = new AuthorizationPolicyBuilder(DummyAuthenticationHandler.Scheme)
