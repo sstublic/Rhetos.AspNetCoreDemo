@@ -41,6 +41,9 @@ namespace Rhetos
 
         public IConfiguration BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration)
         {
+            logProvider.GetLogger("RhetosRuntime")
+                .Error(() => "RhetosRuntime.BuildConfiguration() should not be called, because configuration needs to be handled by host application.");
+
             var configurationBuilder = new ConfigurationBuilder(logProvider);
 
             configurationBuilder.AddConfigurationManagerConfiguration();
@@ -54,24 +57,13 @@ namespace Rhetos
 
         public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents)
         {
+            var log = logProvider.GetLogger("RhetosApp.RhetosRuntime");
+            log.Warning(() => $"RhetosRuntime implementation inside RhetosApp invoked!");
+
             var pluginAssemblies = AssemblyResolver.GetRuntimeAssemblies(configuration);
             var builder = new RhetosContainerBuilder(configuration, logProvider, pluginAssemblies);
 
             builder.AddRhetosRuntime();
-
-            if (_isHost)
-            {
-                // WCF-specific component registrations.
-                // Can be customized later by plugin modules.
-                /*
-                builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
-                builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
-                builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-                builder.RegisterType<WebServices>();
-                builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
-                */
-            }
-
             builder.AddPluginModules();
 
             registerCustomComponents?.Invoke(builder);

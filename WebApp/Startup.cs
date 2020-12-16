@@ -5,7 +5,9 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
 using System.Reflection;
+using Autofac;
 using Microsoft.AspNetCore.Authorization;
+using Rhetos.Extensions.AspNetCore;
 using Rhetos.Processing;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 

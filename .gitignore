@@ -376,3 +376,5 @@ FodyWeavers.xsd
 /.vscode/settings.json
 /Tools/Configuration/rhetos-app.local.settings.json
 /Tools/Configuration/ConnectionStrings.config
+
+*.local.json

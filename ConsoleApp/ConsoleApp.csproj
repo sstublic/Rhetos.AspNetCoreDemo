@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+    <PackageReference Include="Rhetos.CommonConcepts" Version="5.0.0-dev*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Extensions.NetCore\Rhetos.Extensions.NetCore.csproj" />
+    <ProjectReference Include="..\RhetosApp\RhetosApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="console-app-settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="console-app-settings.local.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

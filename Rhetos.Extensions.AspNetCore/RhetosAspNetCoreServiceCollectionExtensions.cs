@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Rhetos;
 using Rhetos.Extensions.AspNetCore;
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using IConfigurationBuilder = Rhetos.IConfigurationBuilder;
 
@@ -12,15 +13,16 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class RhetosAspNetCoreServiceCollectionExtensions
     {
         public static RhetosServiceCollectionBuilder AddRhetos(this IServiceCollection serviceCollection, string rhetosApplicationFolder,
-            Action<RhetosServiceCollectionBuilder> builderActions = null)
+            Action<RhetosServiceCollectionBuilder> builderActions = null, ILogProvider logProvider = null)
         {
-            return AddRhetos(serviceCollection, rhetosApplicationFolder, null, builderActions);
+            return AddRhetos(serviceCollection, rhetosApplicationFolder, null, builderActions, logProvider);
         }
 
         public static RhetosServiceCollectionBuilder AddRhetos(this IServiceCollection serviceCollection, string rhetosApplicationFolder,
-            Configuration.IConfiguration configurationToMap = null, Action<RhetosServiceCollectionBuilder> builderActions = null)
+            Configuration.IConfiguration configurationToMap = null, Action<RhetosServiceCollectionBuilder> builderActions = null, ILogProvider logProvider = null)
         {
-            var logProvider = new ConsoleLogProvider();
+            // TODO: default treba biti NullLogProvider ili neki cross platform diagnostics
+            logProvider ??= new ConsoleLogProvider();
             var rhetosHost = Host.Find(rhetosApplicationFolder, logProvider);
 
             var rhetosConfiguration = rhetosHost.RhetosRuntime.BuildConfiguration(logProvider, rhetosApplicationFolder,
