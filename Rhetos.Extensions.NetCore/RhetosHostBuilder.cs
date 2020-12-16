@@ -1,8 +1,10 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Autofac;
+using Newtonsoft.Json;
 using Rhetos.Extensibility;
 using Rhetos.Extensions.NetCore.Logging;
 using Rhetos.Logging;
@@ -12,39 +14,32 @@ namespace Rhetos.Extensions.NetCore
 {
     public class RhetosHostBuilder
     {
-        private readonly Lazy<IConfigurationBuilder> configurationBuilder;
         private ILogProvider builderLogProvider = new RhetosBuilderDefaultLogProvider();
         private readonly List<Action<ContainerBuilder>> configureContainerActions = new List<Action<ContainerBuilder>>();
-        private string rhetosAppPath;
+        private readonly List<Action<IConfigurationBuilder>> configureConfigurationActions = new List<Action<IConfigurationBuilder>>();
+        private string rhetosAppSettingsFilePath;
+        private ILogger buildLogger;
+        private bool allowDefaultRhetosRuntime = false;
 
         public RhetosHostBuilder()
         {
-            configurationBuilder = new Lazy<IConfigurationBuilder>(() =>
-            {
-                var builder = new ConfigurationBuilder(builderLogProvider);
-                builder.AddKeyValue("Rhetos:PluginScanner:IgnoreAssemblyFiles:0", "rhetos.exe");
-                builder.AddKeyValue("Rhetos:PluginScanner:IgnoreAssemblyFiles:1", "rhetos.dll");
-                builder.AddKeyValue("Rhetos:App:AssetsFolder", "RhetosAssets");
-                return builder;
-            });
         }
 
         public RhetosHostBuilder UseBuilderLogProvider(ILogProvider logProvider)
         {
-#warning inconsistent initialization of logProviders: if configuration builder is evaluated before UseBuilderLogProvider is called, two different LogProviders will be used
-            if (configurationBuilder.IsValueCreated)
-                throw new InvalidOperationException($"Changing log providers is allowed only before modifying configuration.");
-
             builderLogProvider = logProvider;
             return this;
         }
 
-        public RhetosHostBuilder UseRhetosApp(string appPath)
+        public RhetosHostBuilder WithDefaultRhetosRuntime(bool enabled)
         {
-            if (!appPath.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase))
-                appPath += ".dll";
+            allowDefaultRhetosRuntime = enabled;
+            return this;
+        }
 
-            rhetosAppPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, appPath));
+        public RhetosHostBuilder UseRhetosAppSettingsFile(string appSettingsFilePath)
+        {
+            rhetosAppSettingsFilePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, appSettingsFilePath));
             return this;
         }
 
@@ -56,7 +51,7 @@ namespace Rhetos.Extensions.NetCore
 
         public RhetosHostBuilder ConfigureConfiguration(Action<IConfigurationBuilder> configureAction)
         {
-            configureAction?.Invoke(configurationBuilder.Value);
+            configureConfigurationActions.Add(configureAction);
             return this;
         }
 
@@ -68,12 +63,49 @@ namespace Rhetos.Extensions.NetCore
 
         public RhetosHost Build()
         {
-            var rhetosRuntime = ResolveRhetosRuntime();
+            buildLogger = builderLogProvider.GetLogger(nameof(RhetosHost));
+            try
+            {
+                var configuration = CreateConfiguration();
 
-            var configuration = configurationBuilder.Value.Build();
-            var rhetosContainer = rhetosRuntime.BuildContainer(builderLogProvider, configuration, ContainerConfigureAll);
+                var appOptions = configuration.GetOptions<RhetosAppOptions>();
+                var rhetosRuntime = ResolveRhetosRuntimeInstance(appOptions.RhetosRuntimePath);
+                if (rhetosRuntime == null)
+                {
+                    if (!allowDefaultRhetosRuntime)
+                        throw new FrameworkException($"{nameof(IRhetosRuntime)} implementation/export not found in '{appOptions.RhetosRuntimePath}'"
+                                                     + $" and {nameof(DefaultRhetosRuntime)} is not enabled."
+                                                     + $" Add {nameof(IRhetosRuntime)} implementation or enable default by .{nameof(WithDefaultRhetosRuntime)}(true).");
 
-            return new RhetosHost(rhetosContainer);
+                    buildLogger.Info(() => $"{nameof(IRhetosRuntime)} implementation not found in '{appOptions.RhetosRuntimePath}'. Using {nameof(DefaultRhetosRuntime)}.");
+                    rhetosRuntime = new DefaultRhetosRuntime();
+                }
+
+                var rhetosContainer = rhetosRuntime.BuildContainer(builderLogProvider, configuration, ContainerConfigureAll);
+
+                return new RhetosHost(rhetosContainer);
+            }
+            catch (Exception e)
+            {
+                buildLogger.Error(() => $"Error during {nameof(RhetosHostBuilder)}.{nameof(Build)}: {e}");
+                throw;
+            }
+        }
+
+        private IConfiguration CreateConfiguration()
+        {
+            var configurationBuilder = new ConfigurationBuilder(builderLogProvider);
+            rhetosAppSettingsFilePath ??= Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RhetosAppEnvironment.ConfigurationFileName));
+            if (!File.Exists(rhetosAppSettingsFilePath))
+                throw new FrameworkException($"Unable to initialize RhetosHost. Rhetos app settings file '{rhetosAppSettingsFilePath}' not found.");
+
+            buildLogger.Info(() => $"Initializing Rhetos app from '{rhetosAppSettingsFilePath}'.");
+            configurationBuilder.AddJsonFile(rhetosAppSettingsFilePath);
+            
+            foreach (var configureConfigurationAction in configureConfigurationActions)
+                configureConfigurationAction.Invoke(configurationBuilder);
+
+            return configurationBuilder.Build();
         }
 
         private void ContainerConfigureAll(ContainerBuilder rhetosContainerBuilder)
@@ -82,45 +114,14 @@ namespace Rhetos.Extensions.NetCore
                 configureContainerAction.Invoke(rhetosContainerBuilder);
         }
 
-        private IRhetosRuntime ResolveRhetosRuntime()
+        private IRhetosRuntime ResolveRhetosRuntimeInstance(string rhetosRuntimePath)
         {
-            var log = builderLogProvider.GetLogger("RhetosHost");
-            var resolvedPath = rhetosAppPath;
-
-            IRhetosRuntime rhetosRuntime;
-            if (string.IsNullOrEmpty(resolvedPath))
-            {
-                log.Info(() => $"Rhetos app not specified, searching for {nameof(IRhetosRuntime)} implementations in base directory.");
-                rhetosRuntime = TryFindRhetosRuntimeImplementation();
-                if (rhetosRuntime == null)
-                    throw new FrameworkException($"No implementation of interface {nameof(IRhetosRuntime)} found with Export attribute.");
-
-                resolvedPath = rhetosRuntime.GetType().Assembly.Location;
-                log.Info(() => $"Found {nameof(IRhetosRuntime)} in '{resolvedPath}'.");
-            }
-            else
-            {
-                log.Info(() => $"Rhetos app explicitly set, using default {nameof(IRhetosRuntime)} implementation to construct Rhetos container.");
-                rhetosRuntime = new DefaultRhetosRuntime();
-            }
-
-            var runtimePathKey = $"{OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.RhetosRuntimePath)}";
-            configurationBuilder.Value.AddKeyValue(runtimePathKey, resolvedPath);
-
-            return rhetosRuntime;
-        }
-
-        private IRhetosRuntime TryFindRhetosRuntimeImplementation()
-        {
-            var baseFolder = AppDomain.CurrentDomain.BaseDirectory;
-            var assemblyPaths = Directory.GetFiles(baseFolder, "*.dll", SearchOption.TopDirectoryOnly)
-                .ToArray();
-            var assemblyResolver = AssemblyResolver.GetResolveEventHandler(assemblyPaths, builderLogProvider, true);
+            var assemblyResolver = AssemblyResolver.GetResolveEventHandler(new[] { rhetosRuntimePath }, builderLogProvider, true);
             AppDomain.CurrentDomain.AssemblyResolve += assemblyResolver;
 
             try
             {
-                var pluginScanner = new PluginScanner(assemblyPaths, baseFolder, builderLogProvider, new PluginScannerOptions());
+                var pluginScanner = new PluginScanner(new[] { rhetosRuntimePath }, Path.GetDirectoryName(rhetosRuntimePath), builderLogProvider, new PluginScannerOptions());
                 var rhetosRuntimeTypes = pluginScanner.FindPlugins(typeof(IRhetosRuntime)).Select(x => x.Type).ToList();
 
                 if (rhetosRuntimeTypes.Count == 0)
@@ -129,8 +130,7 @@ namespace Rhetos.Extensions.NetCore
                 if (rhetosRuntimeTypes.Count > 1)
                     throw new FrameworkException($"Found multiple implementation of the type {nameof(IRhetosRuntime)}.");
 
-                var rhetosRuntimeInstance = (IRhetosRuntime)Activator.CreateInstance(rhetosRuntimeTypes.Single());
-                return rhetosRuntimeInstance;
+                return (IRhetosRuntime)Activator.CreateInstance(rhetosRuntimeTypes.Single());
             }
             finally
             {

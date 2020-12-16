@@ -20,7 +20,6 @@
 using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
 using System.ComponentModel.Composition;
@@ -58,7 +57,7 @@ namespace Rhetos
         public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents)
         {
             var log = logProvider.GetLogger("RhetosApp.RhetosRuntime");
-            log.Warning(() => $"RhetosRuntime implementation inside RhetosApp invoked!");
+            log.Info(() => $"RhetosRuntime implementation inside RhetosApp invoked!");
 
             var pluginAssemblies = AssemblyResolver.GetRuntimeAssemblies(configuration);
             var builder = new RhetosContainerBuilder(configuration, logProvider, pluginAssemblies);
