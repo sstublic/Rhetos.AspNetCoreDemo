@@ -5,6 +5,7 @@ using Common.Queryable;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rhetos;
+using Rhetos.Deployment;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensions.NetCore;
 using Rhetos.Processing;
@@ -18,50 +19,40 @@ namespace ConsoleApp
     {
         public static void Main(string[] args)
         {
+            var builder = RhetosHost.FindBuilder("ConsoleApp");
+            builder.UseBuilderLogProvider(new ConsoleLogProvider());
+            builder.Build();
+            //return;
+
             // Host relying on configuration mapped from .net core configuration section
             // Will try to locate IRhetosRuntime implementation in assemblies for Rhetos App container creation
-            var rhetosHost = CreateRhetosHostBuilder()
+            
+            using var rhetosHost = CreateRhetosHostBuilder()
                 .Build();
 
             RunCommandSequence(rhetosHost);
-
-            //or try
-            //DemoExplicitAppHost();
        }
 
         // Method by convention. Any Rhetos tooling (e.g. dbupdate) will look for this method in current application
         // to create host for all its operations.
-        public static RhetosHostBuilder CreateRhetosHostBuilder()
+        public static IRhetosHostBuilder CreateRhetosHostBuilder()
         {
+            Console.WriteLine($"** CONSOLE-APP: Building host...");
+
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("console-app-settings.json")
                 .AddJsonFile("console-app-settings.local.json")
                 .Build();
 
             var rhetosHostBuilder = new RhetosHostBuilder()
-                .UseUserInfoProvider(() => new ProcessUserInfo())
-                .ConfigureConfiguration(cfg => cfg.MapNetCoreConfiguration(configuration.GetSection("RhetosApp")));
+                .ConfigureConfiguration(cfg => cfg.MapNetCoreConfiguration(configuration.GetSection("RhetosApp")))
+                .ConfigureContainer(container =>
+                {
+                    Console.WriteLine($"** CONSOLE-APP: Custom container configuration action");
+                    container.UseUserInfoProvider(() => new ProcessUserInfo());
+                });
 
             return rhetosHostBuilder;
-        }
-
-        // Programmatically set minimum configuration keys to create host
-        // Explicitly specifies app settings file
-        // Overrides default ILogProvider to be used during Host build and configuration process
-        private static void DemoExplicitAppHost()
-        {
-            var rhetosHost = new RhetosHostBuilder()
-                .UseUserInfoProvider(() => new ProcessUserInfo())
-                .UseRhetosAppSettingsFile("rhetos-app.settings.json")
-                .UseBuilderLogProvider(new ConsoleLogProvider())
-                .ConfigureConfiguration(cfg =>
-                {
-                    cfg.AddKeyValue("ConnectionStrings:ServerConnectionString:ConnectionString", "<your-connection-string>");
-                    cfg.AddKeyValue("Rhetos:AppSecurity:AllClaimsForUsers", "MACHINENAME\\username@MACHINENAME");
-                })
-                .Build();
-
-            RunCommandSequence(rhetosHost);
         }
 
         private static void RunCommandSequence(RhetosHost rhetosHost)

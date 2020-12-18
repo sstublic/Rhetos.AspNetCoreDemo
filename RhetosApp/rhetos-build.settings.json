@@ -1,0 +1,13 @@
+{
+  "Rhetos": {
+    "Build": {
+      "GenerateAppSettings": false,
+      "BuildResourcesFolder": true,
+      "InitialConceptsSort": "None"
+    }
+  },
+  "CommonConcepts": {
+    "AutoGeneratePolymorphicProperty": true,
+    "CascadeDeleteInDatabase": true
+  }
+}
