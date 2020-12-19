@@ -6,8 +6,8 @@ namespace Rhetos.Extensions.AspNetCore
 {
     internal class RhetosScopeServiceProvider : TransactionScopeContainer, IDisposable
     {
-        public RhetosScopeServiceProvider(RhetosRootServiceProvider containerRoot, IUserInfo rhetosUser)
-        : base(containerRoot.Container, builder => builder.RegisterInstance(rhetosUser))
+        public RhetosScopeServiceProvider(RhetosHost rhetosHost, IUserInfo rhetosUser)
+        : base(rhetosHost.Container, builder => builder.RegisterInstance(rhetosUser))
         { }
 
         public new void Dispose()

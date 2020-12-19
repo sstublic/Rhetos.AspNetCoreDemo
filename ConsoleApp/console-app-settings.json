@@ -1,14 +1,12 @@
 {
-  "RhetosApp": {
-    "Rhetos": {
-      "AppSecurity": {
-        "AllClaimsForUsers": "WORKSTATION\\USER@WORKSTATION"
-      }
-    },
-    "ConnectionStrings": {
-      "ServerConnectionString": {
-        "ConnectionString": ""
-      }
+  "Rhetos": {
+    "AppSecurity": {
+      "AllClaimsForUsers": "WORKSTATION\\USER@WORKSTATION"
+    }
+  },
+  "ConnectionStrings": {
+    "ServerConnectionString": {
+      "ConnectionString": ""
     }
   }
 }

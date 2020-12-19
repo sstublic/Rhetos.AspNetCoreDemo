@@ -6,9 +6,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Rhetos" Version="5.0.0-dev*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Extensions.NetCore\Rhetos.Extensions.NetCore.csproj" />
   </ItemGroup>
 
 </Project>

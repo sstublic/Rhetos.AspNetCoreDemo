@@ -3,11 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System;
-using System.IO;
-using System.Reflection;
-using Autofac;
 using Microsoft.AspNetCore.Authorization;
-using Rhetos.Extensions.AspNetCore;
+using Rhetos;
 using Rhetos.Processing;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
@@ -32,15 +29,12 @@ namespace WebApp
             });
 
             // Adding Rhetos to AspNetCore application
-            services.AddRhetos(
-                Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), // Specify location of the compiled Rhetos app.
-                Configuration.GetSection("RhetosApp"), // Map Microsoft.Extensions.Configuration section to Rhetos configuration.
-                builder => // Specify which Rhetos components will be available for injection in controllers.
+            services.AddRhetos(rhetos =>
                 {
-                    builder
-                        .AddAspNetCoreUser() // Add default IUserInfo implementation which extracts username from HttpContext.
-                        .AddRhetosComponent<IProcessingEngine>(); // Add IProcessingEngine so we can use it in our controllers to execute Rhetos commands.
-                });
+                    rhetos.ConfigureConfiguration(cfg => cfg.MapNetCoreConfiguration(Configuration));
+                })
+                .UseAspNetCoreIdentityUser()
+                .ExposeRhetosComponent<IProcessingEngine>();
             // Done adding Rhetos
 
             services.AddAuthentication(o => o.AddScheme(DummyAuthenticationHandler.Scheme, b =>

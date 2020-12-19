@@ -5,7 +5,7 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Extensions.AspNetCore
 {
-    public class RhetosAspNetCoreUser : IUserInfo
+    public class RhetosAspNetCoreIdentityUser : IUserInfo
     {
         public bool IsUserRecognized => !string.IsNullOrEmpty(UserName);
         public string UserName => userNameValueGenerator.Value;
@@ -13,7 +13,7 @@ namespace Rhetos.Extensions.AspNetCore
 
         private readonly Lazy<string> userNameValueGenerator;
 
-        public RhetosAspNetCoreUser(IHttpContextAccessor httpContextAccessor)
+        public RhetosAspNetCoreIdentityUser(IHttpContextAccessor httpContextAccessor)
         {
             userNameValueGenerator = new Lazy<string>(() => GetUserName(httpContextAccessor.HttpContext?.User));
         }
@@ -29,7 +29,7 @@ namespace Rhetos.Extensions.AspNetCore
 
         public string Report()
         {
-            return $"{nameof(RhetosAspNetCoreUser)}(UserName='{UserName}')";
+            return $"{nameof(RhetosAspNetCoreIdentityUser)}(UserName='{UserName}')";
         }
     }
 }

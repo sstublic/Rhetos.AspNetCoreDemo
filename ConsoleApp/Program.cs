@@ -5,13 +5,11 @@ using Common.Queryable;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rhetos;
-using Rhetos.Deployment;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensions.NetCore;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Security;
-using Rhetos.Utilities;
 
 namespace ConsoleApp
 {
@@ -19,14 +17,6 @@ namespace ConsoleApp
     {
         public static void Main(string[] args)
         {
-            var builder = RhetosHost.FindBuilder("ConsoleApp");
-            builder.UseBuilderLogProvider(new ConsoleLogProvider());
-            builder.Build();
-            //return;
-
-            // Host relying on configuration mapped from .net core configuration section
-            // Will try to locate IRhetosRuntime implementation in assemblies for Rhetos App container creation
-            
             using var rhetosHost = CreateRhetosHostBuilder()
                 .Build();
 
@@ -37,19 +27,16 @@ namespace ConsoleApp
         // to create host for all its operations.
         public static IRhetosHostBuilder CreateRhetosHostBuilder()
         {
-            Console.WriteLine($"** CONSOLE-APP: Building host...");
-
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .AddJsonFile("console-app-settings.json")
                 .AddJsonFile("console-app-settings.local.json")
                 .Build();
 
             var rhetosHostBuilder = new RhetosHostBuilder()
-                .ConfigureConfiguration(cfg => cfg.MapNetCoreConfiguration(configuration.GetSection("RhetosApp")))
-                .ConfigureContainer(container =>
+                .ConfigureConfiguration(builder => builder.MapNetCoreConfiguration(configuration))
+                .ConfigureContainer(builder =>
                 {
-                    Console.WriteLine($"** CONSOLE-APP: Custom container configuration action");
-                    container.UseUserInfoProvider(() => new ProcessUserInfo());
+                    builder.UseUserInfoProvider(() => new ProcessUserInfo());
                 });
 
             return rhetosHostBuilder;
