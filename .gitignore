@@ -378,3 +378,4 @@ FodyWeavers.xsd
 /Tools/Configuration/ConnectionStrings.config
 
 *.local.json
+*.Development.json
