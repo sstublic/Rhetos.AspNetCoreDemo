@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,19 +22,19 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
-        public void SetUserCookie(string userName)
+        public async Task Login(string userName)
         {
-            if (string.IsNullOrEmpty(userName))
-                Response.Cookies.Delete(DummyAuthenticationHandler.CookieName);
-            else
-                Response.Cookies.Append(DummyAuthenticationHandler.CookieName, userName);
+            var claimsIdentity = new ClaimsIdentity(new []{ new Claim(ClaimTypes.Name, userName) }, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                new AuthenticationProperties() {IsPersistent = true});
         }
 
         [HttpGet]
-        public string GetUserCookie()
+        public async Task Logout()
         {
-            var userName = Request.Cookies[DummyAuthenticationHandler.CookieName];
-            return $"UserName cookie value: '{userName}'";
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
     }
 }

@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Rhetos;
+using Rhetos.Extensions.AspNetCore;
 using Rhetos.Processing;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
@@ -37,14 +41,16 @@ namespace WebApp
                 .ExposeRhetosComponent<IProcessingEngine>();
             // Done adding Rhetos
 
-            services.AddAuthentication(o => o.AddScheme(DummyAuthenticationHandler.Scheme, b =>
-            {
-                b.HandlerType = typeof(DummyAuthenticationHandler);
-            }));
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(o => o.Events.OnRedirectToLogin = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Task.CompletedTask;
+                });
 
             services.AddAuthorization(a =>
             {
-                a.FallbackPolicy = new AuthorizationPolicyBuilder(DummyAuthenticationHandler.Scheme)
+                a.FallbackPolicy = new AuthorizationPolicyBuilder(CookieAuthenticationDefaults.AuthenticationScheme)
                     .RequireAuthenticatedUser()
                     .Build();
             });
@@ -53,14 +59,13 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseAuthentication();
-
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApp v1"));
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

@@ -23,7 +23,6 @@ namespace WebApp.Controllers
             this.rhetosUserInfo = rhetosUserInfo;
         }
 
-
         [HttpGet]
         public string RhetosUserInfo()
         {
