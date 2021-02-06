@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Rhetos;
 using Rhetos.Extensions.AspNetCore;
+using Rhetos.Extensions.RestApi;
 using Rhetos.Processing;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace WebApp
@@ -30,14 +33,13 @@ namespace WebApp
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApp", Version = "v1" });
+                c.DocumentFilter<MyDocumentFilter>();
             });
 
             // Adding Rhetos to AspNetCore application
-            services.AddRhetos(rhetos =>
-                {
-                    rhetos.ConfigureConfiguration(cfg => cfg.MapNetCoreConfiguration(Configuration));
-                })
+            services.AddRhetos(new RhetosHostBuilder(), rhetosHostBuilder => ConfigureRhetosHostBuilder(rhetosHostBuilder, Configuration))
                 .UseAspNetCoreIdentityUser()
+                .AddRestApi()
                 .ExposeRhetosComponent<IProcessingEngine>();
             // Done adding Rhetos
 
@@ -72,6 +74,15 @@ namespace WebApp
             {
                 endpoints.MapControllers();
             });
+        }
+
+        // This is extracted to separate public static method so it can be used BOTH from Startup class
+        // and any other code that wishes to recreate RhetosHost specific for this web application
+        // Common use is to call this from Program.CreateRhetosHostBuilder method which is by convention consumed by
+        // Rhetos tools.
+        public static void ConfigureRhetosHostBuilder(IRhetosHostBuilder rhetosHostBuilder, IConfiguration configuration)
+        {
+            rhetosHostBuilder.ConfigureConfiguration(cfg => cfg.MapNetCoreConfiguration(configuration));
         }
     }
 }

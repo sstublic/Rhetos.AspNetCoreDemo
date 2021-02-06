@@ -9,9 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApp", "WebApp\WebApp.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensions.AspNetCore", "Rhetos.Extensions.AspNetCore\Rhetos.Extensions.AspNetCore.csproj", "{56032864-2F2F-4307-90F1-CDC9A9FCD3A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{1B50B169-D8CA-4F09-8280-0202AA30D545}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{1B50B169-D8CA-4F09-8280-0202AA30D545}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensions.NetCore", "Rhetos.Extensions.NetCore\Rhetos.Extensions.NetCore.csproj", "{A550C00C-DB9E-4331-8C7F-30C48F921347}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensions.NetCore", "Rhetos.Extensions.NetCore\Rhetos.Extensions.NetCore.csproj", "{A550C00C-DB9E-4331-8C7F-30C48F921347}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensions.RestApi", "Rhetos.Extensions.RestApi\Rhetos.Extensions.RestApi.csproj", "{EF45FA91-B07D-4858-8B28-7989DBF1D258}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{A550C00C-DB9E-4331-8C7F-30C48F921347}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A550C00C-DB9E-4331-8C7F-30C48F921347}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A550C00C-DB9E-4331-8C7F-30C48F921347}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF45FA91-B07D-4858-8B28-7989DBF1D258}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF45FA91-B07D-4858-8B28-7989DBF1D258}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF45FA91-B07D-4858-8B28-7989DBF1D258}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF45FA91-B07D-4858-8B28-7989DBF1D258}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,19 +4,26 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Extensions.AspNetCore
 {
-    internal class RhetosScopeServiceProvider : TransactionScopeContainer, IDisposable
+    internal class RhetosScopeServiceProvider : IDisposable
     {
+        private readonly TransactionScopeContainer transactionScopeContainer;
+
         public RhetosScopeServiceProvider(RhetosHost rhetosHost, IUserInfo rhetosUser)
-        : base(rhetosHost.Container, builder => builder.RegisterInstance(rhetosUser))
-        { }
-
-        public new void Dispose()
         {
-            CommitChanges();
+            transactionScopeContainer = rhetosHost.CreateScope(builder => builder.RegisterInstance(rhetosUser));
+        }
 
-            Dispose(true);
+        public T Resolve<T>()
+        {
+            return transactionScopeContainer.Resolve<T>();
+        }
+
+        public void Dispose()
+        {
+            transactionScopeContainer.CommitChanges();
+            transactionScopeContainer.Dispose();
+
             GC.SuppressFinalize(this);
-            base.Dispose();
         }
     }
 }

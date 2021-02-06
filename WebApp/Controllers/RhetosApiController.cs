@@ -38,7 +38,6 @@ namespace WebApp.Controllers
                 ReadRecords = true,
             };
             var result = processingEngine.Execute(new List<ICommandInfo>() { readCommand });
-
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
 

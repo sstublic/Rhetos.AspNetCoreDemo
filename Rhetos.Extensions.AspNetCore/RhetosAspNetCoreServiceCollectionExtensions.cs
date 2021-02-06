@@ -6,10 +6,9 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class RhetosAspNetCoreServiceCollectionExtensions
     {
-        public static RhetosAspNetServiceCollectionBuilder AddRhetos(this IServiceCollection serviceCollection,
-            Action<RhetosHostBuilder> configureRhetosHost = null)
+        public static RhetosAspNetServiceCollectionBuilder AddRhetos(this IServiceCollection serviceCollection, IRhetosHostBuilder rhetosHostBuilder,
+            Action<IRhetosHostBuilder> configureRhetosHost = null)
         {
-            var rhetosHostBuilder = new RhetosHostBuilder();
             configureRhetosHost?.Invoke(rhetosHostBuilder);
             var rhetosHost = rhetosHostBuilder.Build();
                 
