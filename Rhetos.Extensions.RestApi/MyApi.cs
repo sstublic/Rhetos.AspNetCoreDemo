@@ -13,6 +13,8 @@ using Rhetos.Processing.DefaultCommands;
 
 namespace Rhetos.Extensions.RestApi
 {
+    /*
+    [ApiExplorerSettings(GroupName = "v1")]
     [Route("MyTest/{module}/{entity}")]
     public class MyApi : ControllerBase, IActionFilter
     {
@@ -26,11 +28,6 @@ namespace Rhetos.Extensions.RestApi
             this.processingEngine = processingEngine;
             this.dslModelRestAspect = dslModelRestAspect;
         }
-
-        // generirani kod koji se onda compilea u controllere
-        // dinamicki generirani controlleri
-        // genericki controlleri?
-        // obican controller
 
         [HttpGet]
         public IActionResult Get()
@@ -100,4 +97,5 @@ namespace Rhetos.Extensions.RestApi
             //throw new NotImplementedException();
         }
     }
+    */
 }

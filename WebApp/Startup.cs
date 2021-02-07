@@ -7,12 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 using Rhetos;
-using Rhetos.Extensions.AspNetCore;
-using Rhetos.Extensions.RestApi;
 using Rhetos.Processing;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace WebApp
@@ -29,17 +25,20 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = null);
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApp", Version = "v1" });
-                c.DocumentFilter<MyDocumentFilter>();
+                c.SwaggerDoc("rhetos", new OpenApiInfo { Title = "Rhetos Rest Api", Version = "v1" });
+                //c.DocumentFilter<MyDocumentFilter>();
             });
+
 
             // Adding Rhetos to AspNetCore application
             services.AddRhetos(new RhetosHostBuilder(), rhetosHostBuilder => ConfigureRhetosHostBuilder(rhetosHostBuilder, Configuration))
                 .UseAspNetCoreIdentityUser()
-                .AddRestApi()
+                .AddRestApi("RhetosRestApiTest")
                 .ExposeRhetosComponent<IProcessingEngine>();
             // Done adding Rhetos
 
@@ -63,7 +62,11 @@ namespace WebApp
         {
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApp v1"));
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/rhetos/swagger.json", "Rhetos Rest Api");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApp v1");
+            });
 
             app.UseRouting();
 

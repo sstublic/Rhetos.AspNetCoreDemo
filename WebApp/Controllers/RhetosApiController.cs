@@ -11,6 +11,7 @@ using Rhetos.Utilities;
 namespace WebApp.Controllers
 {
     [ApiController]
+    [ApiExplorerSettings(GroupName = "v1")]
     [Route("[controller]/[action]")]
     public class RhetosApiController : ControllerBase
     {

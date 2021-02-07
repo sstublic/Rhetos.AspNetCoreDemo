@@ -4,5 +4,16 @@
 	{
 		Logging;
 		ShortString Name;
+		ItemFilter LowerCaseNames 'item => item.Name == item.Name.ToLowerInvariant()';
+	}
+
+	Parameter DemoParameter
+	{
+		ShortString Name;
+	}
+
+	Entity AnotherEntity
+	{
+
 	}
 }

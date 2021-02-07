@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
             serviceCollection.AddSingleton(rhetosHost);
             serviceCollection.AddScoped<RhetosScopeServiceProvider>();
 
-            return new RhetosAspNetServiceCollectionBuilder(serviceCollection);
+            return new RhetosAspNetServiceCollectionBuilder(serviceCollection, rhetosHost);
         }
     }
 }

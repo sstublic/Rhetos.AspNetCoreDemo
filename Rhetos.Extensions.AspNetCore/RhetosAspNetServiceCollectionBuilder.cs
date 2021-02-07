@@ -9,9 +9,11 @@ namespace Rhetos.Extensions.AspNetCore
     public class RhetosAspNetServiceCollectionBuilder
     {
         public IServiceCollection Services { get; }
-        public RhetosAspNetServiceCollectionBuilder(IServiceCollection serviceCollection)
+        public RhetosHost RhetosHost { get; }
+        public RhetosAspNetServiceCollectionBuilder(IServiceCollection serviceCollection, RhetosHost rhetosHost)
         {
             Services = serviceCollection;
+            RhetosHost = rhetosHost;
         }
 
         public RhetosAspNetServiceCollectionBuilder ExposeRhetosComponent<T>() where T : class

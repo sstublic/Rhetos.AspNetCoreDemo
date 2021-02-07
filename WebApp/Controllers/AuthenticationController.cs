@@ -12,6 +12,7 @@ namespace WebApp.Controllers
 {
     [ApiController]
     [AllowAnonymous]
+    [ApiExplorerSettings(GroupName = "v1")]
     [Route("[controller]/[action]")]
     public class AuthenticationController : ControllerBase
     {

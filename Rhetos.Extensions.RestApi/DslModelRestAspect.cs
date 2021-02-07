@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
+using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 
@@ -11,31 +12,42 @@ namespace Rhetos.Extensions.RestApi
 {
     public class DslModelRestAspect
     {
-        private readonly Lazy<IDslModel> dslModel;
-        private readonly Lazy<Dictionary<string, IConceptInfo>> conceptsByKey;
+        public List<Type> RestSupportedTypes => restSupportedTypes.Value;
+        public IDomainObjectModel DomainObjectModel => domainObjectModel.Value;
+
+        private readonly Lazy<Dictionary<Type, IConceptInfo>> typeConceptInfo;
+        private readonly Lazy<List<Type>> restSupportedTypes;
+        private readonly Lazy<IDomainObjectModel> domainObjectModel;
+
         public DslModelRestAspect(RhetosHost rhetosHost)
         {
-            dslModel = new Lazy<IDslModel>(() => ResolveDslModel(rhetosHost));
-            conceptsByKey = new Lazy<Dictionary<string, IConceptInfo>>(() =>
+            domainObjectModel = new Lazy<IDomainObjectModel>(() => ResolveFromHost<IDomainObjectModel>(rhetosHost));
+
+            typeConceptInfo = new Lazy<Dictionary<Type, IConceptInfo>>(() =>
             {
-                return dslModel.Value.Concepts
-                    .Where(a => IsTypeSupported(a as DataStructureInfo))
-                    .ToDictionary(a => a.GetKeyProperties(), a => a, StringComparer.InvariantCultureIgnoreCase);
+                var dslModel = ResolveFromHost<IDslModel>(rhetosHost);
+                var assembly = domainObjectModel.Value.Assemblies.Single();
+
+                return dslModel.Concepts
+                    .Where(a => a is DataStructureInfo)
+                    .ToDictionary(a => assembly.GetType(a.GetKeyProperties()), a => a);
+            });
+
+            restSupportedTypes = new Lazy<List<Type>>(() =>
+            {
+                return typeConceptInfo.Value
+                    .Where(a => IsTypeSupported(a.Value as DataStructureInfo))
+                    .Select(a => a.Key)
+                    .ToList();
             });
         }
 
-        public IConceptInfo ResolveValidConceptInfo(string module, string entityName)
+        public IConceptInfo GetConceptInfo(Type type)
         {
-            if (!conceptsByKey.Value.TryGetValue($"{module}.{entityName}", out var conceptInfo))
-                return null;
-
-            if (!IsTypeSupported(conceptInfo as DataStructureInfo))
-                return null;
-
-            return conceptInfo;
+            return typeConceptInfo.Value[type];
         }
 
-        private static bool IsTypeSupported(DataStructureInfo conceptInfo)
+        public static bool IsTypeSupported(DataStructureInfo conceptInfo)
         {
             return conceptInfo is IOrmDataStructure
                    || conceptInfo is BrowseDataStructureInfo
@@ -43,13 +55,13 @@ namespace Rhetos.Extensions.RestApi
                    || conceptInfo is ComputedInfo;
         }
 
-        private IDslModel ResolveDslModel(RhetosHost rhetosHost)
+        public static T ResolveFromHost<T>(RhetosHost rhetosHost)
         {
             var container = typeof(RhetosHost)
                 .GetProperties(BindingFlags.NonPublic | BindingFlags.Instance)
                 .Single(a => a.Name == "Container")
                 .GetValue(rhetosHost) as IContainer;
-            return container.Resolve<IDslModel>();
+            return container.Resolve<T>();
         }
     }
 }

@@ -22,24 +22,34 @@ namespace WebApp
     {
         public static void Main(string[] args)
         {
-            //
             /*
-            var host = CreateHostBuilder(args).Build();
-            var rhetosHost = host.Services.GetRequiredService<RhetosHost>();
-            using (var rhetosScope = rhetosHost.CreateScope())
-            {
-                var dslModel = rhetosScope.Resolve<IDslModel>();
-                var queryInfos = dslModel.Concepts.Where(a => a.GetKeyProperties().Contains("DemoEntity"))
-                    .Select(a => (key: a.GetKeyProperties(), type: a.GetType(), isDataStructure: a is DataStructureInfo, supported: DslModelRestAspect.IsTypeSupported(a as DataStructureInfo)))
-                    .ToList();
-                var dataStructures = dslModel.Concepts.OfType<DataStructureInfo>().ToList();
-                var domainObjectModel = rhetosScope.Resolve<IDomainObjectModel>();
-            }
+            Sandbox();
+            return;
             */
-            //
-            CreateHostBuilder(args)
-                .Build()
-                .Run();
+            var host = CreateHostBuilder(args)
+                .Build();
+            
+            host.Run();
+        }
+
+        public static void Sandbox()
+        {
+            var host = CreateHostBuilder(null).Build();
+            var rhetosHost = host.Services.GetRequiredService<RhetosHost>();
+
+            var dslModel = DslModelRestAspect.ResolveFromHost<IDslModel>(rhetosHost);
+            var objectModel = DslModelRestAspect.ResolveFromHost<IDomainObjectModel>(rhetosHost);
+
+            Console.WriteLine(objectModel.Assemblies.Count());
+            var assembly = objectModel.Assemblies.Single();
+            Console.WriteLine(assembly.FullName);
+
+            foreach (var conceptInfo in dslModel.Concepts)
+            {
+                var type = assembly.GetType(conceptInfo.GetKeyProperties());
+                if (conceptInfo is DataStructureInfo)
+                    Console.WriteLine($"{conceptInfo.GetKeyProperties(),-40}: {type?.FullName ?? "NULL",-40} [{type?.Assembly.FullName}]");
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
