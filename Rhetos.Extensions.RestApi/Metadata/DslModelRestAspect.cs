@@ -22,7 +22,6 @@ namespace Rhetos.Extensions.RestApi
         public DslModelRestAspect(RhetosHost rhetosHost)
         {
             domainObjectModel = new Lazy<IDomainObjectModel>(() => ResolveFromHost<IDomainObjectModel>(rhetosHost));
-
             typeConceptInfo = new Lazy<Dictionary<Type, IConceptInfo>>(() =>
             {
                 var dslModel = ResolveFromHost<IDslModel>(rhetosHost);
@@ -42,9 +41,19 @@ namespace Rhetos.Extensions.RestApi
             });
         }
 
+        // TODO: Temporary solution
+        public Tuple<string, Type>[] GetFilterTypes()
+        {
+            return typeConceptInfo.Value
+                .Select(a => Tuple.Create(a.Value.GetKeyProperties(), a.Key))
+                .ToArray();
+        }
+
         public IConceptInfo GetConceptInfo(Type type)
         {
-            return typeConceptInfo.Value[type];
+            return typeConceptInfo.Value.TryGetValue(type, out var conceptInfo)
+                ? conceptInfo
+                : null;
         }
 
         public static bool IsTypeSupported(DataStructureInfo conceptInfo)

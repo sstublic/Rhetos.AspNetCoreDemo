@@ -4,16 +4,20 @@
 	{
 		Logging;
 		ShortString Name;
+		Integer Value;
 		ItemFilter LowerCaseNames 'item => item.Name == item.Name.ToLowerInvariant()';
+		ComposableFilterBy HighValueParam '(query, repository, parameter) =>
+        {
+            return query.Where(item => item.Value >= parameter.MinimumValue);
+        }';
 	}
 
-	Parameter DemoParameter
+	Parameter HighValueParam
 	{
-		ShortString Name;
+		Integer MinimumValue;
 	}
 
 	Entity AnotherEntity
 	{
-
 	}
 }

@@ -4,34 +4,36 @@ using Autofac;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensions.RestApi.Controllers;
+using Rhetos.Extensions.RestApi.Metadata;
 
 namespace Rhetos.Extensions.RestApi
 {
     public class RestApiControllerRouteConvention : IControllerModelConvention
     {
-        private readonly DslModelRestAspect dslModelRestAspect;
         private readonly string baseRoute;
+        private readonly ControllerRestInfoRepository controllerRestInfoRepository;
 
-        public RestApiControllerRouteConvention(DslModelRestAspect dslModelRestAspect, string baseRoute)
+        public RestApiControllerRouteConvention(string baseRoute, ControllerRestInfoRepository controllerRestInfoRepository)
         {
-            this.dslModelRestAspect = dslModelRestAspect;
             this.baseRoute = baseRoute;
+            this.controllerRestInfoRepository = controllerRestInfoRepository;
         }
 
         public void Apply(ControllerModel controller)
         {
-            if (controller.ControllerType.IsClosedTypeOf(typeof(RhetosRestApiController<>)))
+            if (controller.ControllerType.IsClosedTypeOf(typeof(RhetosApiControllerBase<>)))
             {
-                var fromType = controller.ControllerType.GetGenericArguments().Single();
-                var info = dslModelRestAspect.GetConceptInfo(fromType);
-                var ds = (DataStructureInfo)info;
-                var route = $"{baseRoute}/{ds.Module.Name}/{ds.Name}";
+                var restMetadata = controllerRestInfoRepository.ControllerConceptInfo[controller.ControllerType.AsType()];
+                var route = $"{baseRoute}/{restMetadata.RelativeRoute}";
+                controller.ControllerName = restMetadata.ControllerName;
+                controller.ApiExplorer.GroupName = restMetadata.ApiExplorerGroupName;
+                controller.ApiExplorer.IsVisible = restMetadata.IsVisible;
+
                 controller.Selectors.Add(new SelectorModel()
                 {
                     AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(route))
                 });
-                controller.ControllerName = ds.Module.Name;
-                controller.ApiExplorer.GroupName = "rhetos";
             }
         }
     }

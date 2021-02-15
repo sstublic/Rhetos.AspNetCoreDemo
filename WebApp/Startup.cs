@@ -7,7 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Rhetos;
+using Rhetos.Extensions.RestApi.Metadata;
+using Rhetos.Extensions.RestApi.Utilities;
 using Rhetos.Processing;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
@@ -25,20 +29,38 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var ser = JsonConvert.SerializeObject(new byte[] {1, 2, 3, 4});
+            Console.WriteLine(ser);
+
             services.AddControllers()
                 .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = null);
+
+            // showcases using NewtonsoftJson and using legacy Microsoft Date serialization
+            // also shows how to force byte[] serialization to serialize as JSon arrays instead of Base64 string
+            services.AddControllers()
+                .AddNewtonsoftJson(o =>
+                {
+                    o.UseMemberCasing();
+                    o.SerializerSettings.DateFormatHandling = DateFormatHandling.MicrosoftDateFormat;
+                    o.SerializerSettings.Converters.Add(new ByteArrayConverter());
+                });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApp", Version = "v1" });
                 c.SwaggerDoc("rhetos", new OpenApiInfo { Title = "Rhetos Rest Api", Version = "v1" });
-                //c.DocumentFilter<MyDocumentFilter>();
+                /*
+                for (var i = 0; i < RestApiControllerFeatureProvider._modulesMax; i++)
+                {
+                    c.SwaggerDoc($"Module{i}", new OpenApiInfo { Title = $"Generated Module{i}", Version = "v1" });
+                }*/
             });
-
 
             // Adding Rhetos to AspNetCore application
             services.AddRhetos(new RhetosHostBuilder(), rhetosHostBuilder => ConfigureRhetosHostBuilder(rhetosHostBuilder, Configuration))
                 .UseAspNetCoreIdentityUser()
-                .AddRestApi("RhetosRestApiTest")
+                .AddRestApi("RhetosRestApiTest",
+                    new IConceptInfoRestMetadataProvider[]{ new RhetosExtendedControllerMetadataProvider(), new ConceptInfoRestMetadataDefaultProvider()})
                 .ExposeRhetosComponent<IProcessingEngine>();
             // Done adding Rhetos
 
@@ -58,14 +80,22 @@ namespace WebApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
         {
             app.UseDeveloperExceptionPage();
+            
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/rhetos/swagger.json", "Rhetos Rest Api");
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApp v1");
+
+                /*
+                for (var i = 0; i < RestApiControllerFeatureProvider._modulesMax; i++)
+                {
+                    c.SwaggerEndpoint($"/swagger/Module{i}/swagger.json", $"Generated Module{i}");
+                }*/
+
             });
 
             app.UseRouting();

@@ -1,20 +1,16 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure.Interception;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Rhetos;
 using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensions.RestApi;
-using ConfigurationBuilder = Rhetos.ConfigurationBuilder;
 
 namespace WebApp
 {
@@ -32,6 +28,7 @@ namespace WebApp
             host.Run();
         }
 
+        // TODO remove debug code
         public static void Sandbox()
         {
             var host = CreateHostBuilder(null).Build();
@@ -40,6 +37,14 @@ namespace WebApp
             var dslModel = DslModelRestAspect.ResolveFromHost<IDslModel>(rhetosHost);
             var objectModel = DslModelRestAspect.ResolveFromHost<IDomainObjectModel>(rhetosHost);
 
+            foreach (var conceptInfo in dslModel.Concepts.Where(a => a.GetKeyProperties().Contains("HighValueParam")))
+            {
+                var conceptType = objectModel.Assemblies.Single().GetType(conceptInfo.ToString());
+                //Console.WriteLine($"{GetBaseTypes(conceptInfo.GetType())}, {conceptInfo.GetKeyProperties()}, {conceptInfo is IWritableOrmDataStructure}, {conceptType?.FullName}, {conceptType is IWritableOrmDataStructure}");
+                Console.WriteLine($"{conceptInfo.GetKeyProperties()}, {conceptInfo.GetKey()}, {conceptInfo.GetKeywordOrTypeName()}");
+            }
+
+            /*
             Console.WriteLine(objectModel.Assemblies.Count());
             var assembly = objectModel.Assemblies.Single();
             Console.WriteLine(assembly.FullName);
@@ -49,8 +54,22 @@ namespace WebApp
                 var type = assembly.GetType(conceptInfo.GetKeyProperties());
                 if (conceptInfo is DataStructureInfo)
                     Console.WriteLine($"{conceptInfo.GetKeyProperties(),-40}: {type?.FullName ?? "NULL",-40} [{type?.Assembly.FullName}]");
-            }
+            }*/
         }
+
+        // TODO remove debug code
+        private static string GetBaseTypes(Type type)
+        {
+            var baseTypes = new List<string>();
+            while (type != null)
+            {
+                baseTypes.Add(type.Name);
+                type = type.BaseType;
+            }
+
+            return string.Join("->", baseTypes);
+        }
+
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
@@ -66,6 +85,7 @@ namespace WebApp
         {
             // create Host for this web app
             var host = CreateHostBuilder(null).Build();
+            
             
             // extract configuration of the web app
             var configuration = host.Services.GetRequiredService<IConfiguration>();
