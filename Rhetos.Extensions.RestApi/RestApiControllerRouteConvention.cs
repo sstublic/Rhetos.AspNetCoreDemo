@@ -11,12 +11,12 @@ namespace Rhetos.Extensions.RestApi
 {
     public class RestApiControllerRouteConvention : IControllerModelConvention
     {
-        private readonly string baseRoute;
+        private readonly RestApiOptions restApiOptions;
         private readonly ControllerRestInfoRepository controllerRestInfoRepository;
 
-        public RestApiControllerRouteConvention(string baseRoute, ControllerRestInfoRepository controllerRestInfoRepository)
+        public RestApiControllerRouteConvention(RestApiOptions restApiOptions, ControllerRestInfoRepository controllerRestInfoRepository)
         {
-            this.baseRoute = baseRoute;
+            this.restApiOptions = restApiOptions;
             this.controllerRestInfoRepository = controllerRestInfoRepository;
         }
 
@@ -25,7 +25,7 @@ namespace Rhetos.Extensions.RestApi
             if (controller.ControllerType.IsClosedTypeOf(typeof(RhetosApiControllerBase<>)))
             {
                 var restMetadata = controllerRestInfoRepository.ControllerConceptInfo[controller.ControllerType.AsType()];
-                var route = $"{baseRoute}/{restMetadata.RelativeRoute}";
+                var route = $"{restApiOptions.BaseRoute}/{restMetadata.RelativeRoute}";
                 controller.ControllerName = restMetadata.ControllerName;
                 controller.ApiExplorer.GroupName = restMetadata.ApiExplorerGroupName;
                 controller.ApiExplorer.IsVisible = restMetadata.IsVisible;

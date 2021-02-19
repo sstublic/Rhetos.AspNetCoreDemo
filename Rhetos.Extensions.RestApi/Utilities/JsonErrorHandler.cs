@@ -54,27 +54,6 @@ namespace Rhetos.Extensions.RestApi.Utilities
                 if (clientException.Message == "User is not authenticated." && responseStatusCode == StatusCodes.Status400BadRequest)
                     responseStatusCode = StatusCodes.Status401Unauthorized;
             }
-            /*
-            else if (error is InvalidOperationException && error.Message.StartsWith("The incoming message has an unexpected message format 'Raw'"))
-            {
-                responseStatusCode = StatusCodes.Status400BadRequest;
-                responseMessage = new ResponseMessage
-                {
-                    SystemMessage = "The incoming message has an unexpected message format 'Raw'. Set the Content-Type to 'application/json'." +
-                        " " + FrameworkException.SeeLogMessage(error)
-                };
-            }
-            */
-            /*
-            else if (error is SerializationException && !error.StackTrace.ToString().Contains("Rhetos"))
-            {
-                responseStatusCode = StatusCodes.Status400BadRequest;
-                responseMessage = new ResponseMessage
-                {
-                    SystemMessage = "Serialization error: Please check if the request body has a valid JSON format."
-                        + " " + FrameworkException.SeeLogMessage(error)
-                };
-            }*/
             else
             {
                 responseStatusCode = StatusCodes.Status500InternalServerError;

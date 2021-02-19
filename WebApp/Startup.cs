@@ -29,11 +29,8 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var ser = JsonConvert.SerializeObject(new byte[] {1, 2, 3, 4});
-            Console.WriteLine(ser);
-
             services.AddControllers()
-                .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = null);
+                .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = null); // unnecessary if using newtonsoft.json and configuring the same option
 
             // showcases using NewtonsoftJson and using legacy Microsoft Date serialization
             // also shows how to force byte[] serialization to serialize as JSon arrays instead of Base64 string
@@ -49,18 +46,17 @@ namespace WebApp
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApp", Version = "v1" });
                 c.SwaggerDoc("rhetos", new OpenApiInfo { Title = "Rhetos Rest Api", Version = "v1" });
-                /*
-                for (var i = 0; i < RestApiControllerFeatureProvider._modulesMax; i++)
-                {
-                    c.SwaggerDoc($"Module{i}", new OpenApiInfo { Title = $"Generated Module{i}", Version = "v1" });
-                }*/
             });
 
             // Adding Rhetos to AspNetCore application
             services.AddRhetos(new RhetosHostBuilder(), rhetosHostBuilder => ConfigureRhetosHostBuilder(rhetosHostBuilder, Configuration))
                 .UseAspNetCoreIdentityUser()
-                .AddRestApi("RhetosRestApiTest",
-                    new IConceptInfoRestMetadataProvider[]{ new RhetosExtendedControllerMetadataProvider(), new ConceptInfoRestMetadataDefaultProvider()})
+                .AddRestApi(o =>
+                {
+                    o.BaseRoute = "RhetosRestApiTest";
+                    o.ConceptInfoRestMetadataProviders.Add(new RhetosExtendedControllerMetadataProvider());
+                    o.GroupNameMapper = (conceptInfo, name) => "rhetos";
+                })
                 .ExposeRhetosComponent<IProcessingEngine>();
             // Done adding Rhetos
 
@@ -83,19 +79,13 @@ namespace WebApp
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
         {
             app.UseDeveloperExceptionPage();
-            
+
             app.UseSwagger();
+            
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/rhetos/swagger.json", "Rhetos Rest Api");
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApp v1");
-
-                /*
-                for (var i = 0; i < RestApiControllerFeatureProvider._modulesMax; i++)
-                {
-                    c.SwaggerEndpoint($"/swagger/Module{i}/swagger.json", $"Generated Module{i}");
-                }*/
-
             });
 
             app.UseRouting();

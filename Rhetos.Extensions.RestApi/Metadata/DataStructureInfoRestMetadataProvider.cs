@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Autofac;
-using Rhetos;
 using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensions.RestApi.Controllers;
-using Rhetos.Extensions.RestApi.Metadata;
 
-namespace WebApp
+namespace Rhetos.Extensions.RestApi.Metadata
 {
-    public class RhetosExtendedControllerMetadataProvider : IConceptInfoRestMetadataProvider
+    public class DataStructureInfoRestMetadataProvider : IConceptInfoRestMetadataProvider
     {
         public IEnumerable<ConceptInfoRestMetadata> GetConceptInfoRestMetadata(RhetosHost rhetosHost)
         {
@@ -20,10 +19,10 @@ namespace WebApp
 
             var restMetadata = dslModel
                 .FindByType<DataStructureInfo>()
-                .Where(dataStructureInfo => dataStructureInfo.Module.Name == "AspNetDemo")
+                .Where(IsDataStructureTypeSupported)
                 .Select(dataStructureInfo => new ConceptInfoRestMetadata()
                 {
-                    ControllerType = typeof(RhetosExtendedController<>).MakeGenericType(domainObjectModel.GetType($"{dataStructureInfo.FullName}")),
+                    ControllerType = typeof(DataApiController<>).MakeGenericType(domainObjectModel.GetType($"{dataStructureInfo.FullName}")),
                     ControllerName = $"{dataStructureInfo.Module.Name}.{dataStructureInfo.Name}",
                     RelativeRoute = $"{dataStructureInfo.Module.Name}/{dataStructureInfo.Name}",
                     ApiExplorerGroupName = dataStructureInfo.Module.Name,
@@ -31,5 +30,14 @@ namespace WebApp
 
             return restMetadata;
         }
+
+        private static bool IsDataStructureTypeSupported(DataStructureInfo conceptInfo)
+        {
+            return conceptInfo is IOrmDataStructure
+                   || conceptInfo is BrowseDataStructureInfo
+                   || conceptInfo is QueryableExtensionInfo
+                   || conceptInfo is ComputedInfo;
+        }
+
     }
 }

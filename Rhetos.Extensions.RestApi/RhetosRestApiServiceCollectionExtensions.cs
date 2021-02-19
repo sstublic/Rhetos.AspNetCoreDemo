@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Rhetos;
 using Rhetos.Extensions.AspNetCore;
 using Rhetos.Extensions.RestApi;
 using Rhetos.Extensions.RestApi.Filters;
@@ -18,10 +19,23 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class RhetosRestApiServiceCollectionExtensions
     {
-        public static RhetosAspNetServiceCollectionBuilder AddRestApi(this RhetosAspNetServiceCollectionBuilder builder, string baseRoute,
-            IEnumerable<IConceptInfoRestMetadataProvider> conceptInfoRestMetadataProviders = null)
+        private static readonly IConceptInfoRestMetadataProvider[] _defaultMetadataProviders =
         {
-            var restMetadataProviders = conceptInfoRestMetadataProviders?.ToArray() ?? new[] {new ConceptInfoRestMetadataDefaultProvider()};
+            new ActionInfoRestMetadataProvider(),
+            new ReportDataInfoRestMetadataProvider(),
+            new DataStructureInfoRestMetadataProvider(),
+        };
+
+        public static RhetosAspNetServiceCollectionBuilder AddRestApi(this RhetosAspNetServiceCollectionBuilder builder, 
+            Action<RestApiOptions> configureOptions, Action<ControllerRestInfoRepository> onControllerRestInfoCreated = null)
+        {
+            var options = new RestApiOptions()
+            {
+                BaseRoute = "RhetosRestApi",
+                ConceptInfoRestMetadataProviders = new List<IConceptInfoRestMetadataProvider>(_defaultMetadataProviders)
+            };
+
+            configureOptions?.Invoke(options);
 
             builder.ExposeRhetosComponent<IProcessingEngine>();
             builder.ExposeRhetosComponent<IPersistenceTransaction>();
@@ -36,20 +50,36 @@ namespace Microsoft.Extensions.DependencyInjection
             var dslModelRestAspect = new DslModelRestAspect(builder.RhetosHost);
             builder.Services.AddSingleton(dslModelRestAspect);
 
-            // create and share instance of repository
-            var controllerRepository = new ControllerRestInfoRepository();
+            var controllerRepository = CreateControllerRestInfoRepository(builder.RhetosHost, options);
+            onControllerRestInfoCreated?.Invoke(controllerRepository);
 
             builder.Services
                 .AddControllers(o =>
-                {
-                    o.Conventions.Add(new RestApiControllerRouteConvention(baseRoute, controllerRepository));
-                })
+                    o.Conventions.Add(new RestApiControllerRouteConvention(options, controllerRepository)))
                 .ConfigureApplicationPartManager(p =>
-                {
-                    p.FeatureProviders.Add(new RestApiControllerFeatureProvider(dslModelRestAspect, builder.RhetosHost, restMetadataProviders, controllerRepository));
-                });
+                    p.FeatureProviders.Add(new RestApiControllerFeatureProvider(controllerRepository)));
 
             return builder;
+        }
+
+        private static ControllerRestInfoRepository CreateControllerRestInfoRepository(RhetosHost rhetosHost, RestApiOptions options)
+        {
+            var controllerRepository = new ControllerRestInfoRepository();
+            foreach (var conceptInfoRestMetadataProvider in options.ConceptInfoRestMetadataProviders)
+            {
+                var metadataFromProvider = conceptInfoRestMetadataProvider.GetConceptInfoRestMetadata(rhetosHost);
+                foreach (var metadataItem in metadataFromProvider)
+                    controllerRepository.ControllerConceptInfo.Add(metadataItem.ControllerType, metadataItem);
+            }
+
+            // transform all group names
+            if (options.GroupNameMapper != null)
+            {
+                foreach (var restMetadata in controllerRepository.ControllerConceptInfo.Values)
+                    restMetadata.ApiExplorerGroupName = options.GroupNameMapper.Invoke(restMetadata.ConceptInfo, restMetadata.ApiExplorerGroupName);
+            }
+
+            return controllerRepository;
         }
     }
 }

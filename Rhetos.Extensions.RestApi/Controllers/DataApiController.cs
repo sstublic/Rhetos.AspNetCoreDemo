@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensions.RestApi.Utilities;
 using Rhetos.Processing;
 
@@ -18,6 +22,19 @@ namespace Rhetos.Extensions.RestApi.Controllers
         {
             this.serviceUtility = serviceUtility;
             this.dslModelRestAspect = dslModelRestAspect;
+
+
+            // TODO: remove debug code
+            /*
+            var type = typeof(T);
+            IDslModel dslModel = null;
+
+            // brzi nacin - dovoljno brzo za svaki request
+            var conceptInfo = dslModel.FindByKey($"DataStructureInfo {type.FullName}");
+
+            // drugi nacin
+            dslModel.FindByType<DataStructureInfo>().Single(a => a.FullName == type.FullName);
+            */
         }
         
         [HttpGet]
@@ -38,7 +55,6 @@ namespace Rhetos.Extensions.RestApi.Controllers
                 readRecords: false, readTotalCount: true);
             return new JsonResult(new CountResult {TotalRecords = data.TotalCount });
         }
-
 
         [HttpGet]
         [Route("TotalCount")]

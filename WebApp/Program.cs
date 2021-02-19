@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Autofac;
 using Microsoft.Extensions.DependencyInjection;
 using Rhetos;
 using Rhetos.Dom;
@@ -18,10 +19,10 @@ namespace WebApp
     {
         public static void Main(string[] args)
         {
-            /*
-            Sandbox();
-            return;
-            */
+            
+            //Sandbox();
+            //return;
+            
             var host = CreateHostBuilder(args)
                 .Build();
             
@@ -34,8 +35,8 @@ namespace WebApp
             var host = CreateHostBuilder(null).Build();
             var rhetosHost = host.Services.GetRequiredService<RhetosHost>();
 
-            var dslModel = DslModelRestAspect.ResolveFromHost<IDslModel>(rhetosHost);
-            var objectModel = DslModelRestAspect.ResolveFromHost<IDomainObjectModel>(rhetosHost);
+            var dslModel = rhetosHost.GetRootContainer().Resolve<IDslModel>();
+            var objectModel = rhetosHost.GetRootContainer().Resolve<IDomainObjectModel>();
 
             foreach (var conceptInfo in dslModel.Concepts.Where(a => a.GetKeyProperties().Contains("HighValueParam")))
             {

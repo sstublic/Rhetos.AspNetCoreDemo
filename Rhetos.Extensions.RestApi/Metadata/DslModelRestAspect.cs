@@ -21,10 +21,10 @@ namespace Rhetos.Extensions.RestApi
 
         public DslModelRestAspect(RhetosHost rhetosHost)
         {
-            domainObjectModel = new Lazy<IDomainObjectModel>(() => ResolveFromHost<IDomainObjectModel>(rhetosHost));
+            domainObjectModel = new Lazy<IDomainObjectModel>(() =>  rhetosHost.GetRootContainer().Resolve<IDomainObjectModel>());
             typeConceptInfo = new Lazy<Dictionary<Type, IConceptInfo>>(() =>
             {
-                var dslModel = ResolveFromHost<IDslModel>(rhetosHost);
+                var dslModel = rhetosHost.GetRootContainer().Resolve<IDslModel>();
                 var assembly = domainObjectModel.Value.Assemblies.Single();
 
                 return dslModel.Concepts
@@ -62,15 +62,6 @@ namespace Rhetos.Extensions.RestApi
                    || conceptInfo is BrowseDataStructureInfo
                    || conceptInfo is QueryableExtensionInfo
                    || conceptInfo is ComputedInfo;
-        }
-
-        public static T ResolveFromHost<T>(RhetosHost rhetosHost)
-        {
-            var container = typeof(RhetosHost)
-                .GetProperties(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Single(a => a.Name == "Container")
-                .GetValue(rhetosHost) as IContainer;
-            return container.Resolve<T>();
         }
     }
 }
