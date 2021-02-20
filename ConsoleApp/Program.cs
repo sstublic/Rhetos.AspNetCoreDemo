@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autofac;
 using Common.Queryable;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensions.NetCore;
+using Rhetos.Logging;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Security;
+using Rhetos.Utilities;
 
 namespace ConsoleApp
 {
@@ -33,6 +36,7 @@ namespace ConsoleApp
                 .Build();
 
             var rhetosHostBuilder = new RhetosHostBuilder()
+                .ConfigureRhetosHostDefaults()
                 .ConfigureConfiguration(builder => builder.MapNetCoreConfiguration(configuration))
                 .ConfigureContainer(builder =>
                 {
@@ -58,7 +62,7 @@ namespace ConsoleApp
                 };
                 Console.WriteLine($"Deleting {resultData.Records.Length} records.");
                 processingEngine.Execute(new List<ICommandInfo>() {deleteCommand});
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
 
             using (var scope = rhetosHost.CreateScope())
@@ -95,7 +99,7 @@ namespace ConsoleApp
                 };
                 Console.WriteLine($"Inserting entity with commit.");
                 processingEngine.Execute(new List<ICommandInfo>() { insertCommand });
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
 
             using (var scope = rhetosHost.CreateScope())

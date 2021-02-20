@@ -1,28 +1,27 @@
 ﻿using System;
 using Autofac;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 
 namespace Rhetos.Extensions.AspNetCore
 {
-    internal class RhetosScopeServiceProvider : IDisposable
+    internal sealed class RhetosScopeServiceProvider : IDisposable
     {
-        private readonly TransactionScopeContainer transactionScopeContainer;
+        private readonly UnitOfWorkScope unitOfWorkScope;
 
         public RhetosScopeServiceProvider(RhetosHost rhetosHost, IUserInfo rhetosUser)
         {
-            transactionScopeContainer = rhetosHost.CreateScope(builder => builder.RegisterInstance(rhetosUser));
+            unitOfWorkScope = rhetosHost.CreateScope(builder => builder.RegisterInstance(rhetosUser));
         }
 
         public T Resolve<T>()
         {
-            return transactionScopeContainer.Resolve<T>();
+            return unitOfWorkScope.Resolve<T>();
         }
 
         public void Dispose()
         {
-            transactionScopeContainer.CommitChanges();
-            transactionScopeContainer.Dispose();
-
+            unitOfWorkScope.Dispose();
             GC.SuppressFinalize(this);
         }
     }

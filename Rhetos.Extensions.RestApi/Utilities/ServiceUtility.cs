@@ -123,7 +123,7 @@ namespace Rhetos.Extensions.RestApi.Utilities
                     result.Add(new OrderByProperty
                     {
                         Property = sortPropertyInfo[0],
-                        Descending = sortPropertyInfo.Count() >= 2 && sortPropertyInfo[1].ToLower().Equals("desc")
+                        Descending = sortPropertyInfo.Count() >= 2 && sortPropertyInfo[1].Equals("desc", StringComparison.InvariantCultureIgnoreCase)
                     });
                 }
             }

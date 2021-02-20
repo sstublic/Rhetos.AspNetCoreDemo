@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensions.RestApi.Metadata;
 using Rhetos.Extensions.RestApi.Utilities;
 using Rhetos.Processing;
 
@@ -16,13 +18,19 @@ namespace Rhetos.Extensions.RestApi.Controllers
     public class DataApiController<T> : RhetosApiControllerBase<T>
     {
         private readonly ServiceUtility serviceUtility;
-        private readonly DslModelRestAspect dslModelRestAspect;
+        private readonly Lazy<Tuple<string, Type>[]> dataStructureParameters;
 
-        public DataApiController(ServiceUtility serviceUtility, DslModelRestAspect dslModelRestAspect)
+        public DataApiController(ServiceUtility serviceUtility, ControllerRestInfoRepository controllerRestInfoRepository)
         {
             this.serviceUtility = serviceUtility;
-            this.dslModelRestAspect = dslModelRestAspect;
-
+            dataStructureParameters = new Lazy<Tuple<string, Type>[]>(() =>
+            {
+                var dataStructureInfoMetadata = controllerRestInfoRepository.ControllerConceptInfo[this.GetType()] as DataStructureInfoMetadata;
+                if (dataStructureInfoMetadata == null)
+                    throw new InvalidOperationException(
+                        $"Registered {nameof(ConceptInfoRestMetadata)} for {GetType().Name} should be an instance of {nameof(DataStructureInfoMetadata)}.");
+                return dataStructureInfoMetadata.GetParameters();
+            });
 
             // TODO: remove debug code
             /*
@@ -41,8 +49,8 @@ namespace Rhetos.Extensions.RestApi.Controllers
         public ActionResult<RecordsResult<T>> Get(string filter = null, string fparam = null, string genericfilter = null, string filters = null,
             int top = 0, int skip = 0, int page = 0, int psize = 0, string sort = null)
         {
-            //var filterType = RestServiceMetadata.GetFilterTypesByDataStructure(typeof(TDataStructure).FullName)
-            var data = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dslModelRestAspect.GetFilterTypes(), top, skip, page, psize, sort, true, false);
+            Console.WriteLine(string.Join("\n", dataStructureParameters.Value.Select(a => $"{a.Item1}: {a.Item2.Name}")));
+            var data = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dataStructureParameters.Value, top, skip, page, psize, sort, true, false);
             return new JsonResult(new RecordsResult<T>() { Records = data.Records });
         }
 
@@ -51,7 +59,7 @@ namespace Rhetos.Extensions.RestApi.Controllers
         [Route("Count")]
         public ActionResult<CountResult> GetCount(string filter, string fparam, string genericfilter, string filters, string sort)
         {
-            var data = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dslModelRestAspect.GetFilterTypes(), 0, 0, 0, 0, sort,
+            var data = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dataStructureParameters.Value, 0, 0, 0, 0, sort,
                 readRecords: false, readTotalCount: true);
             return new JsonResult(new CountResult {TotalRecords = data.TotalCount });
         }
@@ -60,7 +68,7 @@ namespace Rhetos.Extensions.RestApi.Controllers
         [Route("TotalCount")]
         public ActionResult<TotalCountResult> GetTotalCount(string filter, string fparam, string genericfilter, string filters, string sort)
         {
-            var data = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dslModelRestAspect.GetFilterTypes(), 0, 0, 0, 0, sort,
+            var data = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dataStructureParameters.Value, 0, 0, 0, 0, sort,
                 readRecords: false, readTotalCount: true);
             return new JsonResult(new TotalCountResult { TotalCount = data.TotalCount });
         }
@@ -70,7 +78,7 @@ namespace Rhetos.Extensions.RestApi.Controllers
         public ActionResult<RecordsAndTotalCountResult<T>> GetRecordsAndTotalCount(string filter, string fparam, string genericfilter, string filters, int top, int skip, int page, int psize,
             string sort)
         {
-            var result = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dslModelRestAspect.GetFilterTypes(), top, skip, page, psize, sort,
+            var result = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dataStructureParameters.Value, top, skip, page, psize, sort,
                 readRecords: true, readTotalCount: true);
 
             return new JsonResult(result);

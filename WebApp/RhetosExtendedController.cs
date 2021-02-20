@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Rhetos;
 using Rhetos.Extensions.RestApi.Controllers;
 
 namespace WebApp

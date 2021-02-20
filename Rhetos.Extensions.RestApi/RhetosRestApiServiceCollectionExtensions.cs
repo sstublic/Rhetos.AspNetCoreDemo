@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Rhetos;
+using Rhetos.Dom;
 using Rhetos.Extensions.AspNetCore;
 using Rhetos.Extensions.RestApi;
 using Rhetos.Extensions.RestApi.Filters;
@@ -40,7 +42,9 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.ExposeRhetosComponent<IProcessingEngine>();
             builder.ExposeRhetosComponent<IPersistenceTransaction>();
             builder.ExposeRhetosComponent<ILocalizer>();
+
             builder.Services.AddSingleton<QueryParameters>();
+            builder.Services.AddSingleton(builder.RhetosHost.GetRootContainer().Resolve<IDomainObjectModel>()); // TODO needed as singleton and only for GetFilterType herustics
             builder.Services.AddScoped<ServiceUtility>();
             builder.Services.AddScoped<JsonErrorHandler>();
             
@@ -52,6 +56,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var controllerRepository = CreateControllerRestInfoRepository(builder.RhetosHost, options);
             onControllerRestInfoCreated?.Invoke(controllerRepository);
+
+            builder.Services.AddSingleton(controllerRepository);
 
             builder.Services
                 .AddControllers(o =>

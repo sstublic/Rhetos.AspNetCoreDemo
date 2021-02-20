@@ -105,7 +105,9 @@ namespace WebApp
         // Rhetos tools.
         public static void ConfigureRhetosHostBuilder(IRhetosHostBuilder rhetosHostBuilder, IConfiguration configuration)
         {
-            rhetosHostBuilder.ConfigureConfiguration(cfg => cfg.MapNetCoreConfiguration(configuration));
+            rhetosHostBuilder
+                .ConfigureRhetosHostDefaults()
+                .ConfigureConfiguration(cfg => cfg.MapNetCoreConfiguration(configuration));
         }
     }
 }

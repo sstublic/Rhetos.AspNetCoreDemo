@@ -54,10 +54,15 @@ namespace Rhetos.Extensions.RestApi.Utilities
                 if (clientException.Message == "User is not authenticated." && responseStatusCode == StatusCodes.Status400BadRequest)
                     responseStatusCode = StatusCodes.Status401Unauthorized;
             }
-            else
+            else if (error is FrameworkException)
             {
                 responseStatusCode = StatusCodes.Status500InternalServerError;
                 responseMessage = new ResponseMessage { SystemMessage = FrameworkException.GetInternalServerErrorMessage(localizer, error) };
+            }
+            else
+            {
+                responseStatusCode = StatusCodes.Status500InternalServerError;
+                responseMessage = new ResponseMessage() { SystemMessage = error.Message };
             }
 
             return (responseMessage, responseStatusCode);

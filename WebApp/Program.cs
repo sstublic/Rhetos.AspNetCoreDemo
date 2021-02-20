@@ -3,15 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Autofac;
 using Microsoft.Extensions.DependencyInjection;
 using Rhetos;
 using Rhetos.Dom;
 using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensions.RestApi;
 
 namespace WebApp
 {
@@ -19,7 +16,6 @@ namespace WebApp
     {
         public static void Main(string[] args)
         {
-            
             //Sandbox();
             //return;
             
@@ -86,7 +82,6 @@ namespace WebApp
         {
             // create Host for this web app
             var host = CreateHostBuilder(null).Build();
-            
             
             // extract configuration of the web app
             var configuration = host.Services.GetRequiredService<IConfiguration>();

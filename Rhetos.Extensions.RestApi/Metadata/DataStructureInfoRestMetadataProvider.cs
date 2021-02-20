@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Rhetos.Dom;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensions.RestApi.Controllers;
@@ -16,11 +17,19 @@ namespace Rhetos.Extensions.RestApi.Metadata
         {
             var dslModel = rhetosHost.GetRootContainer().Resolve<IDslModel>();
             var domainObjectModel = rhetosHost.GetRootContainer().Resolve<IDomainObjectModel>();
+            var dataStructureReadParameters = rhetosHost.GetRootContainer().Resolve<IDataStructureReadParameters>();
+
+            Tuple<string, Type>[] FromDataStructureInfo(DataStructureInfo dataStructureInfo)
+            {
+                return dataStructureReadParameters.GetReadParameters(dataStructureInfo.FullName, true)
+                    .Select(a => Tuple.Create(a.Name, a.Type))
+                    .ToArray();
+            }
 
             var restMetadata = dslModel
                 .FindByType<DataStructureInfo>()
                 .Where(IsDataStructureTypeSupported)
-                .Select(dataStructureInfo => new ConceptInfoRestMetadata()
+                .Select(dataStructureInfo => new DataStructureInfoMetadata(FromDataStructureInfo(dataStructureInfo))
                 {
                     ControllerType = typeof(DataApiController<>).MakeGenericType(domainObjectModel.GetType($"{dataStructureInfo.FullName}")),
                     ControllerName = $"{dataStructureInfo.Module.Name}.{dataStructureInfo.Name}",

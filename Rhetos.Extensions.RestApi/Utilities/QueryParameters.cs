@@ -27,11 +27,11 @@ namespace Rhetos.Extensions.RestApi.Utilities
 {
     public class QueryParameters
     {
-        private readonly DslModelRestAspect _dslModelRestAspect;
+        private readonly IDomainObjectModel domainObjectModel;
 
-        public QueryParameters(DslModelRestAspect dslModelRestAspect)
+        public QueryParameters(IDomainObjectModel domainObjectModel)
         {
-            _dslModelRestAspect = dslModelRestAspect;
+            this.domainObjectModel = domainObjectModel;
         }
 
         /// <param name="filter">Legacy</param>
@@ -103,7 +103,7 @@ namespace Rhetos.Extensions.RestApi.Utilities
                 filterType = matchingTypes.Single();
 
             if (filterType == null)
-                filterType = _dslModelRestAspect.DomainObjectModel.GetType(filterName);
+                filterType = domainObjectModel.GetType(filterName);
 
             if (filterType == null)
                 filterType = Type.GetType(filterName);
