@@ -49,7 +49,7 @@ namespace WebApp
             });
 
             // Adding Rhetos to AspNetCore application
-            services.AddRhetos(new RhetosHostBuilder(), rhetosHostBuilder => ConfigureRhetosHostBuilder(rhetosHostBuilder, Configuration))
+            services.AddRhetos(rhetosHostBuilder => ConfigureRhetosHostBuilder(rhetosHostBuilder, Configuration))
                 .UseAspNetCoreIdentityUser()
                 .AddRestApi(o =>
                 {
