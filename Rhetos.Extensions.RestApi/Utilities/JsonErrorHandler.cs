@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Rhetos.Extensions.AspNetCore;
 using Rhetos.Utilities;
 
 namespace Rhetos.Extensions.RestApi.Utilities
@@ -21,9 +22,9 @@ namespace Rhetos.Extensions.RestApi.Utilities
             }
         }
 
-        public JsonErrorHandler(ILocalizer localizer)
+        public JsonErrorHandler(IRhetosComponent<ILocalizer> rhetosLocalizer)
         {
-            this.localizer = localizer;
+            this.localizer = rhetosLocalizer.Value;
         }
 
         public (object response, int statusCode) CreateResponseFromException(Exception error)

@@ -58,8 +58,7 @@ namespace WebApp
                     o.BaseRoute = "RhetosRestApiTest";
                     o.ConceptInfoRestMetadataProviders.Add(new RhetosExtendedControllerMetadataProvider());
                     o.GroupNameMapper = (conceptInfo, name) => "rhetos";
-                })
-                .ExposeRhetosComponent<IProcessingEngine>();
+                });
             // Done adding Rhetos
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

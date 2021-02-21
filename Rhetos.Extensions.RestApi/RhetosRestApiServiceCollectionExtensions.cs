@@ -39,10 +39,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             configureOptions?.Invoke(options);
 
-            builder.ExposeRhetosComponent<IProcessingEngine>();
-            builder.ExposeRhetosComponent<IPersistenceTransaction>();
-            builder.ExposeRhetosComponent<ILocalizer>();
-
             builder.Services.AddSingleton<QueryParameters>();
             builder.Services.AddSingleton(builder.RhetosHost.GetRootContainer().Resolve<IDomainObjectModel>()); // TODO needed as singleton and only for GetFilterType herustics
             builder.Services.AddScoped<ServiceUtility>();

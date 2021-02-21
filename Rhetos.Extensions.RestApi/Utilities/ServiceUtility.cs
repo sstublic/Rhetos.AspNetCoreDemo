@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensions.AspNetCore;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
 
@@ -43,9 +44,9 @@ namespace Rhetos.Extensions.RestApi.Utilities
             }
         }
 
-        public ServiceUtility(IProcessingEngine processingEngine, QueryParameters queryParameters)
+        public ServiceUtility(IRhetosComponent<IProcessingEngine> rhetosProcessingEngine, QueryParameters queryParameters)
         {
-            _processingEngine = processingEngine;
+            _processingEngine = rhetosProcessingEngine.Value;
             _queryParameters = queryParameters;
         }
 

@@ -31,18 +31,6 @@ namespace Rhetos.Extensions.RestApi.Controllers
                         $"Registered {nameof(ConceptInfoRestMetadata)} for {GetType().Name} should be an instance of {nameof(DataStructureInfoMetadata)}.");
                 return dataStructureInfoMetadata.GetParameters();
             });
-
-            // TODO: remove debug code
-            /*
-            var type = typeof(T);
-            IDslModel dslModel = null;
-
-            // brzi nacin - dovoljno brzo za svaki request
-            var conceptInfo = dslModel.FindByKey($"DataStructureInfo {type.FullName}");
-
-            // drugi nacin
-            dslModel.FindByType<DataStructureInfo>().Single(a => a.FullName == type.FullName);
-            */
         }
         
         [HttpGet]
@@ -104,7 +92,7 @@ namespace Rhetos.Extensions.RestApi.Controllers
             */
 
             if (item == null)
-                throw new ClientException("Invalid request: Missing the record data.The data should be provided in the request message body.");
+                throw new ClientException("Invalid request: Missing the record data. The data should be provided in the request message body.");
 
             var entity = item as IEntity;
 
@@ -125,7 +113,7 @@ namespace Rhetos.Extensions.RestApi.Controllers
             */
 
             if (item == null)
-                throw new ClientException("Invalid request: Missing the record data.The data should be provided in the request message body.");
+                throw new ClientException("Invalid request: Missing the record data. The data should be provided in the request message body.");
 
             if (!Guid.TryParse(id, out Guid guid))
                 throw new LegacyClientException("Invalid format of GUID parameter 'ID'.");

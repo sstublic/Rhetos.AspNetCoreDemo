@@ -1,17 +1,18 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Rhetos.Extensions.AspNetCore;
 using Rhetos.Persistence;
 
 namespace Rhetos.Extensions.RestApi.Filters
 {
     public class ApiCommitOnSuccessFilter : IActionFilter, IOrderedFilter
     {
-        private readonly IPersistenceTransaction persistenceTransaction;
+        private readonly IRhetosComponent<IPersistenceTransaction> rhetosPersistenceTransaction;
         public int Order { get; } = int.MaxValue - 20;
 
-        public ApiCommitOnSuccessFilter(IPersistenceTransaction persistenceTransaction)
+        public ApiCommitOnSuccessFilter(IRhetosComponent<IPersistenceTransaction> rhetosPersistenceTransaction)
         {
-            this.persistenceTransaction = persistenceTransaction;
+            this.rhetosPersistenceTransaction = rhetosPersistenceTransaction;
         }
 
         public void OnActionExecuting(ActionExecutingContext context)
@@ -22,8 +23,8 @@ namespace Rhetos.Extensions.RestApi.Filters
         {
             if (context.HttpContext.Response.StatusCode == 200 && context.Exception == null)
             {
-                persistenceTransaction.CommitChanges();
-                persistenceTransaction.Dispose();
+                rhetosPersistenceTransaction.Value.CommitChanges();
+                rhetosPersistenceTransaction.Value.Dispose();
             }
         }
     }
