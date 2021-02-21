@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 using Rhetos;
 using Rhetos.Dom;
@@ -28,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
             new DataStructureInfoRestMetadataProvider(),
         };
 
-        public static RhetosAspNetServiceCollectionBuilder AddRestApi(this RhetosAspNetServiceCollectionBuilder builder, 
+        public static RhetosAspNetServiceCollectionBuilder AddRestApi(this RhetosAspNetServiceCollectionBuilder builder,
             Action<RestApiOptions> configureOptions, Action<ControllerRestInfoRepository> onControllerRestInfoCreated = null)
         {
             var options = new RestApiOptions()
@@ -39,16 +40,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             configureOptions?.Invoke(options);
 
-            builder.Services.AddSingleton<QueryParameters>();
-            builder.Services.AddSingleton(builder.RhetosHost.GetRootContainer().Resolve<IDomainObjectModel>()); // TODO needed as singleton and only for GetFilterType herustics
-            builder.Services.AddScoped<ServiceUtility>();
-            builder.Services.AddScoped<JsonErrorHandler>();
+            builder.Services.TryAddScoped<QueryParameters>();
+            builder.Services.TryAddScoped<ServiceUtility>();
+            builder.Services.TryAddScoped<JsonErrorHandler>();
             
-            builder.Services.AddScoped<ApiExceptionFilter>();
-            builder.Services.AddScoped<ApiCommitOnSuccessFilter>();
-
-            var dslModelRestAspect = new DslModelRestAspect(builder.RhetosHost);
-            builder.Services.AddSingleton(dslModelRestAspect);
+            builder.Services.TryAddScoped<ApiExceptionFilter>();
+            builder.Services.TryAddScoped<ApiCommitOnSuccessFilter>();
 
             var controllerRepository = CreateControllerRestInfoRepository(builder.RhetosHost, options);
             onControllerRestInfoCreated?.Invoke(controllerRepository);
@@ -57,9 +54,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services
                 .AddControllers(o =>
-                    o.Conventions.Add(new RestApiControllerRouteConvention(options, controllerRepository)))
+                {
+                    o.Conventions.Add(new RestApiControllerRouteConvention(options, controllerRepository));
+                })
                 .ConfigureApplicationPartManager(p =>
-                    p.FeatureProviders.Add(new RestApiControllerFeatureProvider(controllerRepository)));
+                {
+                    p.FeatureProviders.Add(new RestApiControllerFeatureProvider(controllerRepository));
+                });
 
             return builder;
         }

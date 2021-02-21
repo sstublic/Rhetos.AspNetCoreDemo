@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensions.AspNetCore;
 
 namespace Rhetos.Extensions.RestApi.Utilities
 {
@@ -29,9 +30,9 @@ namespace Rhetos.Extensions.RestApi.Utilities
     {
         private readonly IDomainObjectModel domainObjectModel;
 
-        public QueryParameters(IDomainObjectModel domainObjectModel)
+        public QueryParameters(IRhetosComponent<IDomainObjectModel> rhetosDomainObjectModel)
         {
-            this.domainObjectModel = domainObjectModel;
+            this.domainObjectModel = rhetosDomainObjectModel.Value;
         }
 
         /// <param name="filter">Legacy</param>

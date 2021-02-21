@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Common.Queryable;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
+using Rhetos.Extensions.AspNetCore;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
@@ -15,12 +16,12 @@ namespace WebApp.Controllers
     [Route("[controller]/[action]")]
     public class RhetosApiController : ControllerBase
     {
-        private readonly IProcessingEngine processingEngine;
+        private readonly IRhetosComponent<IProcessingEngine> rhetosProcessingEngine;
         private readonly IUserInfo rhetosUserInfo;
 
-        public RhetosApiController(IProcessingEngine processingEngine, IUserInfo rhetosUserInfo)
+        public RhetosApiController(IRhetosComponent<IProcessingEngine> rhetosProcessingEngine, IUserInfo rhetosUserInfo)
         {
-            this.processingEngine = processingEngine;
+            this.rhetosProcessingEngine = rhetosProcessingEngine;
             this.rhetosUserInfo = rhetosUserInfo;
         }
 
@@ -38,7 +39,7 @@ namespace WebApp.Controllers
                 DataSource = "AspNetDemo.DemoEntity",
                 ReadRecords = true,
             };
-            var result = processingEngine.Execute(new List<ICommandInfo>() { readCommand });
+            var result = rhetosProcessingEngine.Value.Execute(new List<ICommandInfo>() { readCommand });
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
 
@@ -53,7 +54,7 @@ namespace WebApp.Controllers
                 Entity = "AspNetDemo.DemoEntity",
                 DataToInsert = new[] {new AspNetDemo_DemoEntity() {Name = name}}
             };
-            var result = processingEngine.Execute(new List<ICommandInfo>() {insertCommand});
+            var result = rhetosProcessingEngine.Value.Execute(new List<ICommandInfo>() {insertCommand});
 
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
@@ -68,7 +69,7 @@ namespace WebApp.Controllers
                 OrderByProperties = new []{ new OrderByProperty() { Property = "Created", Descending = true} },
                 Top = 100
             };
-            var result = processingEngine.Execute(new List<ICommandInfo>() {readCommand});
+            var result = rhetosProcessingEngine.Value.Execute(new List<ICommandInfo>() {readCommand});
 
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
