@@ -16,64 +16,17 @@ namespace WebApp
     {
         public static void Main(string[] args)
         {
-            //Sandbox();
-            //return;
-            
             var host = CreateHostBuilder(args)
                 .Build();
             
             host.Run();
         }
 
-        // TODO remove debug code
-        public static void Sandbox()
-        {
-            var host = CreateHostBuilder(null).Build();
-            var rhetosHost = host.Services.GetRequiredService<RhetosHost>();
-
-            var dslModel = rhetosHost.GetRootContainer().Resolve<IDslModel>();
-            var objectModel = rhetosHost.GetRootContainer().Resolve<IDomainObjectModel>();
-
-            foreach (var conceptInfo in dslModel.Concepts.Where(a => a.GetKeyProperties().Contains("HighValueParam")))
-            {
-                var conceptType = objectModel.Assemblies.Single().GetType(conceptInfo.ToString());
-                //Console.WriteLine($"{GetBaseTypes(conceptInfo.GetType())}, {conceptInfo.GetKeyProperties()}, {conceptInfo is IWritableOrmDataStructure}, {conceptType?.FullName}, {conceptType is IWritableOrmDataStructure}");
-                Console.WriteLine($"{conceptInfo.GetKeyProperties()}, {conceptInfo.GetKey()}, {conceptInfo.GetKeywordOrTypeName()}");
-            }
-
-            /*
-            Console.WriteLine(objectModel.Assemblies.Count());
-            var assembly = objectModel.Assemblies.Single();
-            Console.WriteLine(assembly.FullName);
-
-            foreach (var conceptInfo in dslModel.Concepts)
-            {
-                var type = assembly.GetType(conceptInfo.GetKeyProperties());
-                if (conceptInfo is DataStructureInfo)
-                    Console.WriteLine($"{conceptInfo.GetKeyProperties(),-40}: {type?.FullName ?? "NULL",-40} [{type?.Assembly.FullName}]");
-            }*/
-        }
-
-        // TODO remove debug code
-        private static string GetBaseTypes(Type type)
-        {
-            var baseTypes = new List<string>();
-            while (type != null)
-            {
-                baseTypes.Add(type.Name);
-                type = type.BaseType;
-            }
-
-            return string.Join("->", baseTypes);
-        }
-
-
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    //webBuilder.UseUrls("http://0.0.0.0:80");
                 });
 
         // This method exposes IRhetosHostBuilder for purposes of tooling using same configuration values

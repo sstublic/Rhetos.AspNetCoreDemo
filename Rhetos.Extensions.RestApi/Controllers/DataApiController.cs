@@ -49,7 +49,6 @@ namespace Rhetos.Extensions.RestApi.Controllers
         public ActionResult<RecordsResult<T>> Get(string filter = null, string fparam = null, string genericfilter = null, string filters = null,
             int top = 0, int skip = 0, int page = 0, int psize = 0, string sort = null)
         {
-            Console.WriteLine(string.Join("\n", dataStructureParameters.Value.Select(a => $"{a.Item1}: {a.Item2.Name}")));
             var data = serviceUtility.GetData<T>(filter, fparam, genericfilter, filters, dataStructureParameters.Value, top, skip, page, psize, sort, true, false);
             return new JsonResult(new RecordsResult<T>() { Records = data.Records });
         }

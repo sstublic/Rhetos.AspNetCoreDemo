@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Autofac;
 using Common.Queryable;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensions.NetCore;
-using Rhetos.Logging;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Security;
-using Rhetos.Utilities;
 
 namespace ConsoleApp
 {

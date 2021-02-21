@@ -20,4 +20,20 @@
 	Entity AnotherEntity
 	{
 	}
+
+	Browse ReadOnlyDemo AspNetDemo.DemoEntity
+	{
+        Take Name;
+	}
+
+	Browse WritableDemo AspNetDemo.DemoEntity
+	{
+        Take Name;
+		Write '_domRepository.AspNetDemo.DemoEntity.Save(
+			insertedNew.Select(x => new DemoEntity { ID = x.ID, Name = x.Name }),
+			updatedNew.Select(x => new DemoEntity { ID = x.ID, Name = x.Name }),
+			deletedIds.Select(x => new DemoEntity { ID = x.ID, Name = x.Name }),
+            checkUserPermissions
+            );';
+	}
 }

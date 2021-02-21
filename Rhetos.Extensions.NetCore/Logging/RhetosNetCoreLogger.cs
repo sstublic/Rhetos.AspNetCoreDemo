@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Rhetos.Logging;
-using EventId = Microsoft.Extensions.Logging.EventId;
 using ILogger = Rhetos.Logging.ILogger;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Rhetos.Extensions.NetCore.Logging
 {
