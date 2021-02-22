@@ -5,7 +5,7 @@
 		Logging;
 		ShortString Name;
 		Integer Value;
-		ItemFilter LowerCaseNames 'item => item.Name == item.Name.ToLowerInvariant()';
+		ItemFilter LongNames 'item => item.Name.Length > 5';
 		ComposableFilterBy HighValueParam '(query, repository, parameter) =>
         {
             return query.Where(item => item.Value >= parameter.MinimumValue);

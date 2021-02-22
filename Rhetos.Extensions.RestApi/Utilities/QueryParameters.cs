@@ -83,17 +83,11 @@ namespace Rhetos.Extensions.RestApi.Utilities
             return parsedFilters.ToArray();
         }
 
-        private static readonly Tuple<string, Type>[] _standardFilterTypes = new Tuple<string, Type>[]
-        {
-            Tuple.Create("Guid[]", typeof(Guid[])),
-            Tuple.Create("System.Guid[]", typeof(Guid[])),
-        };
-
         private Type GetFilterType(string filterName, Tuple<string, Type>[] filterTypes)
         {
             Type filterType = null;
 
-            List<Type> matchingTypes = filterTypes.Concat(_standardFilterTypes)
+            List<Type> matchingTypes = filterTypes
                 .Where(f => f.Item1.Equals(filterName)).Select(f => f.Item2).Distinct().ToList();
 
             if (matchingTypes.Count > 1)
