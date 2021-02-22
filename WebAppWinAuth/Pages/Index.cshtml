@@ -1,0 +1,18 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+	<h1 class="display-4">Welcome</h1>
+	
+	<div>
+		Username: '@Model.UserInfo.UserName' <br/>
+		WorkStation: '@Model.UserInfo.Workstation' <br/>
+	</div>
+	
+	<div>
+		<a asp-page="./ReadDemoEntities">Read DemoEntity</a>
+	</div>
+</div>

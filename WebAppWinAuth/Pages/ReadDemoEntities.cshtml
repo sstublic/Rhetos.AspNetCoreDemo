@@ -1,0 +1,27 @@
+﻿@page
+@model WebAppWinAuth.Pages.ReadDemoEntitiesModel
+@{
+}
+
+@if (Model.DemoEntityList != null)
+{
+	<table class="table">
+		<thead>
+		<tr>
+			<th>ID</th>
+			<th>Name</th>
+			<th>Value</th>
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var entity in Model.DemoEntityList)
+		{
+			<tr>
+				<td>@entity.ID</td>
+				<td>@entity.Name</td>
+				<td>@entity.Value</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+}

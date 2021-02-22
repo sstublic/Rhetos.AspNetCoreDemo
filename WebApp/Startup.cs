@@ -10,11 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Rhetos;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensions.NetCore.Logging;
-using Rhetos.Extensions.RestApi.Metadata;
 using Rhetos.Extensions.RestApi.Utilities;
-using Rhetos.Processing;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace WebApp

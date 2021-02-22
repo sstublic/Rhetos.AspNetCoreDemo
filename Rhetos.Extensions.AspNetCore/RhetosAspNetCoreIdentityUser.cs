@@ -9,12 +9,14 @@ namespace Rhetos.Extensions.AspNetCore
     {
         public bool IsUserRecognized => !string.IsNullOrEmpty(UserName);
         public string UserName => userNameValueGenerator.Value;
-        public string Workstation => "";
+        public string Workstation => workstationValueGenerator.Value;
 
         private readonly Lazy<string> userNameValueGenerator;
+        private readonly Lazy<string> workstationValueGenerator;
 
         public RhetosAspNetCoreIdentityUser(IHttpContextAccessor httpContextAccessor)
         {
+            workstationValueGenerator = new Lazy<string>(() => GetWorkstation(httpContextAccessor.HttpContext));
             userNameValueGenerator = new Lazy<string>(() => GetUserName(httpContextAccessor.HttpContext?.User));
         }
 
@@ -25,6 +27,11 @@ namespace Rhetos.Extensions.AspNetCore
                 throw new InvalidOperationException($"No username found while trying to resolve user from HttpContext.");
 
             return userNameFromContext;
+        }
+
+        private string GetWorkstation(HttpContext httpContext)
+        {
+            return httpContext.Connection?.RemoteIpAddress?.ToString();
         }
 
         public string Report()
