@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 using Rhetos.Extensions.RestApi.Utilities;
 
 namespace Rhetos.Extensions.RestApi.Filters
@@ -11,11 +12,13 @@ namespace Rhetos.Extensions.RestApi.Filters
     public class ApiExceptionFilter : IActionFilter, IOrderedFilter
     {
         private readonly JsonErrorHandler jsonErrorHandler;
+        private readonly ILogger logger;
         public int Order { get; } = int.MaxValue - 10;
         
-        public ApiExceptionFilter(JsonErrorHandler jsonErrorHandler)
+        public ApiExceptionFilter(JsonErrorHandler jsonErrorHandler, ILogger<ApiExceptionFilter> logger)
         {
             this.jsonErrorHandler = jsonErrorHandler;
+            this.logger = logger;
         }
 
         public void OnActionExecuting(ActionExecutingContext context)
@@ -57,7 +60,25 @@ namespace Rhetos.Extensions.RestApi.Filters
                 var (response, statusCode) = jsonErrorHandler.CreateResponseFromException(context.Exception);
                 context.Result = new JsonResult(response) { StatusCode = statusCode };
                 context.ExceptionHandled = true;
+                LogException(context.Exception);
             }
+        }
+
+        private void LogException(Exception error)
+        {
+            if (error is UserException)
+                logger.LogTrace(error.ToString());
+            else if (error is LegacyClientException legacyException)
+            {
+                if (legacyException.Severe)
+                    logger.LogInformation(legacyException.ToString());
+                else
+                    logger.LogTrace(legacyException.ToString());
+            }
+            else if (error is ClientException)
+                logger.LogInformation(error.ToString());
+            else
+                logger.LogError(error.ToString());
         }
     }
 }
