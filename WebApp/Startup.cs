@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Rhetos;
+using Rhetos.Extensions.AspNetCore;
 using Rhetos.Extensions.NetCore.Logging;
 using Rhetos.Extensions.RestApi.Utilities;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
@@ -50,6 +51,7 @@ namespace WebApp
             // Adding Rhetos to AspNetCore application
             services.AddRhetos(rhetosHostBuilder => ConfigureRhetosHostBuilder(rhetosHostBuilder, Configuration))
                 .UseAspNetCoreIdentityUser()
+                .AddImpersonation()
                 .AddRestApi(o =>
                 {
                     o.BaseRoute = "RhetosRestApiTest";

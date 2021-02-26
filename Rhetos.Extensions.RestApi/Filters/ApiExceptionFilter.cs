@@ -12,7 +12,7 @@ namespace Rhetos.Extensions.RestApi.Filters
     {
         private readonly JsonErrorHandler jsonErrorHandler;
         public int Order { get; } = int.MaxValue - 10;
-
+        
         public ApiExceptionFilter(JsonErrorHandler jsonErrorHandler)
         {
             this.jsonErrorHandler = jsonErrorHandler;

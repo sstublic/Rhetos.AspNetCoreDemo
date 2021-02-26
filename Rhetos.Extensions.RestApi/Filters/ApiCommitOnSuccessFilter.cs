@@ -5,7 +5,7 @@ using Rhetos.Persistence;
 
 namespace Rhetos.Extensions.RestApi.Filters
 {
-    public class ApiCommitOnSuccessFilter : IActionFilter, IOrderedFilter
+    internal class ApiCommitOnSuccessFilter : IActionFilter, IOrderedFilter
     {
         private readonly IRhetosComponent<IPersistenceTransaction> rhetosPersistenceTransaction;
         public int Order { get; } = int.MaxValue - 20;
@@ -24,8 +24,8 @@ namespace Rhetos.Extensions.RestApi.Filters
             if (context.HttpContext.Response.StatusCode == 200 && context.Exception == null)
             {
                 rhetosPersistenceTransaction.Value.CommitChanges();
-                rhetosPersistenceTransaction.Value.Dispose();
             }
+            rhetosPersistenceTransaction.Value.Dispose();
         }
     }
 }

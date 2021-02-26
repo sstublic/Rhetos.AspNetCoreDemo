@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Common;
 using Common.Queryable;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensions.AspNetCore;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
@@ -18,11 +21,34 @@ namespace WebApp.Controllers
     {
         private readonly IRhetosComponent<IProcessingEngine> rhetosProcessingEngine;
         private readonly IUserInfo rhetosUserInfo;
+        private readonly IRhetosComponent<ExecutionContext> rhetosExecutionContext;
 
-        public RhetosApiController(IRhetosComponent<IProcessingEngine> rhetosProcessingEngine, IUserInfo rhetosUserInfo)
+        public RhetosApiController(IRhetosComponent<IProcessingEngine> rhetosProcessingEngine, IUserInfo rhetosUserInfo,
+            IRhetosComponent<ExecutionContext> rhetosExecutionContext)
         {
             this.rhetosProcessingEngine = rhetosProcessingEngine;
             this.rhetosUserInfo = rhetosUserInfo;
+            this.rhetosExecutionContext = rhetosExecutionContext;
+        }
+
+        [HttpPost]
+        public void InitUser(string userName)
+        {
+            var common = rhetosExecutionContext.Value.Repository.Common;
+            var principal = new Common.Principal() { Name = userName, ID = Guid.NewGuid() };
+            common.Principal.Insert(new [] {principal});
+            rhetosExecutionContext.Value.PersistenceTransaction.CommitChanges();
+        }
+
+        [HttpPost]
+        public void AddClaim(string userName, string claimResource, string claimRight)
+        {
+            var common = rhetosExecutionContext.Value.Repository.Common;
+            var user = common.Principal.Query().Single(a => a.Name == userName);
+            var claim = common.Claim.Query().Single(a => a.ClaimResource == claimResource && a.ClaimRight == claimRight);
+            var permission = new PrincipalPermission() { ID = Guid.NewGuid(), IsAuthorized = true, ClaimID = claim.ID, PrincipalID = user.ID};
+            common.PrincipalPermission.Insert(new [] {permission});
+            rhetosExecutionContext.Value.PersistenceTransaction.CommitChanges();
         }
 
         [HttpGet]

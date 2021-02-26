@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensions.NetCore",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensions.RestApi", "Rhetos.Extensions.RestApi\Rhetos.Extensions.RestApi.csproj", "{EF45FA91-B07D-4858-8B28-7989DBF1D258}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAppWinAuth", "WebAppWinAuth\WebAppWinAuth.csproj", "{AA2B3360-7CC1-4970-8F32-323757AD096E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAppWinAuth", "WebAppWinAuth\WebAppWinAuth.csproj", "{AA2B3360-7CC1-4970-8F32-323757AD096E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Host.AspNet.Impersonation", "src\Rhetos.Host.AspNet.Impersonation\Rhetos.Host.AspNet.Impersonation.csproj", "{4B06973B-FA3B-43B9-85B0-A961B3F94F12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{AA2B3360-7CC1-4970-8F32-323757AD096E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA2B3360-7CC1-4970-8F32-323757AD096E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA2B3360-7CC1-4970-8F32-323757AD096E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B06973B-FA3B-43B9-85B0-A961B3F94F12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B06973B-FA3B-43B9-85B0-A961B3F94F12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B06973B-FA3B-43B9-85B0-A961B3F94F12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B06973B-FA3B-43B9-85B0-A961B3F94F12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

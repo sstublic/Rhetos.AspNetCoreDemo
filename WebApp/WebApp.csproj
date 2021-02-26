@@ -25,5 +25,6 @@
     <ProjectReference Include="..\Rhetos.Extensions.AspNetCore\Rhetos.Extensions.AspNetCore.csproj" />
     <ProjectReference Include="..\Rhetos.Extensions.RestApi\Rhetos.Extensions.RestApi.csproj" />
     <ProjectReference Include="..\RhetosApp\RhetosApp.csproj" />
+    <ProjectReference Include="..\src\Rhetos.Host.AspNet.Impersonation\Rhetos.Host.AspNet.Impersonation.csproj" />
   </ItemGroup>
 </Project>

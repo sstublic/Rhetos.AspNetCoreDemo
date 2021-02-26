@@ -18,6 +18,9 @@
     <PackageReference Include="Rhetos.CommonConcepts">
       <Version>5.0.0-dev*</Version>
     </PackageReference>
+    <PackageReference Include="Rhetos.Impersonation">
+      <Version>5.0.0-dev*</Version>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
